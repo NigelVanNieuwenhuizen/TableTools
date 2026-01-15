@@ -60,7 +60,7 @@
 
             <div class="main-content">
                 <h1 id="top">TableTools Manual</h1>
-                <p class="updated-timestamp">Last Updated: 2026-01-07 14:33:44</p>
+                <p class="updated-timestamp">Last Updated: 2026-01-15 08:03:35</p>
 
                 <div class="section intro-text">
                     
@@ -2375,7 +2375,7 @@ tt.display_processing_time()</code></pre>
     <div class="function-doc" id="date-generate_year_range">
         <h4><code>generate_year_range(start, end)</code></h4>
         <p>Return a list of yearly dates in a yyyy format within the specified range.</p>
-        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>start (integer)</code>: the starting date in the date range. Must be in a yyyy format.</p><p><code>end (integer)</code>: the ending date in the date range. This date is non-inclusive (eg. if an ending date of 2020 is specified, the last year in the output date range will be 2019). Must be in a yyyy format.</p></div>
+        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>start (integer, string)</code>: the starting date in the date range. May be specified as an integer in yyyy format or an ISO format date string.</p><p><code>end (integer ,string)</code>: the ending date in the date range. This date is non-inclusive (eg. if an ending date of 2020 is specified, the last year in the output date range will be 2019). May be specified as an integer in yyyy format or an ISO format date string.</p></div>
         <p><strong>Example:</strong></p><pre><code>result = tt.date.generate_year_range(start, end)</code></pre>
     </div>
     

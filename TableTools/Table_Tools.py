@@ -9101,16 +9101,17 @@ class _Date():
 
         Parameters:
 
-        start (integer): the starting date in the date range. Must be in a yyyy format.
+        start (integer, string): the starting date in the date range. May be specified as an integer in yyyy format or an ISO format date string.
         
-        end (integer): the ending date in the date range. This date is non-inclusive (eg. if an ending date of 2020 is specified, the last year in the output date range will be 2019). Must be in a yyyy format."""
-        if not isinstance(start, int) or not isinstance(end, int):
-            raise ValueError("Start and end must be integers representing years (e.g., 2020).")
+        end (integer ,string): the ending date in the date range. This date is non-inclusive (eg. if an ending date of 2020 is specified, the last year in the output date range will be 2019). May be specified as an integer in yyyy format or an ISO format date string."""
+        if isinstance(start,str):
+            start = int(start[:4])
+        if isinstance(end,str):
+            end = int(end[:4])
         if start >= end:
             raise ValueError("Start year must be less than end year.")
-
         return list(range(start, end))
-    
+           
     def generate_leap_years(self,start,end):
         """Return a list of leap years in a yyyy format within the specified range.
 
@@ -19246,7 +19247,7 @@ class TableTools():
 
     def version(self):
         """Print the current version of TableTools."""
-        print(f"TableTools version 1.0")
+        print(f"TableTools v1.0.1")
 
     def view_manual(self):
         """Open a web browser to view the TableTools manual."""
@@ -22194,5 +22195,3 @@ class TableTools():
 
                 # EOF marker
                 f.write(b"\x1A")
-
-# FIGURE OUT HOW TO LOAD TO GITHUB - make sure it knows this is pure python and users should be able to download a folder

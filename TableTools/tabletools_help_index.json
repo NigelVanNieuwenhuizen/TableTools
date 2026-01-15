@@ -1658,7 +1658,7 @@
         "name": "generate_year_range",
         "category": "date",
         "signature": "(self, start, end)",
-        "doc": "Return a list of yearly dates in a yyyy format within the specified range.\n\nParameters:\n\nstart (integer): the starting date in the date range. Must be in a yyyy format.\n\nend (integer): the ending date in the date range. This date is non-inclusive (eg. if an ending date of 2020 is specified, the last year in the output date range will be 2019). Must be in a yyyy format.",
+        "doc": "Return a list of yearly dates in a yyyy format within the specified range.\n\nParameters:\n\nstart (integer, string): the starting date in the date range. May be specified as an integer in yyyy format or an ISO format date string.\n\nend (integer ,string): the ending date in the date range. This date is non-inclusive (eg. if an ending date of 2020 is specified, the last year in the output date range will be 2019). May be specified as an integer in yyyy format or an ISO format date string.",
         "example": "result = tt.date.generate_year_range(start, end)"
     },
     "date.get_date_range": {

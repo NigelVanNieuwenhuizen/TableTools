@@ -81,15 +81,7 @@ Specialized toolboxes extend TableTools into:
 ### **Setup**
 - Unzip the downloaded file  
 - Copy the `TableTools/` folder into the same directory as your Python script  
-- Import and use:
-
-```python
-from TableTools.Table_Tools import TableTools
-
-tt = TableTools()
-```
-
-No installation required.
+- Import and use. No installation required
 
 ---
 
