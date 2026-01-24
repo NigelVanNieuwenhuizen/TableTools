@@ -1922,7 +1922,7 @@ class _Math():
 
         vals (list): the list of values the operation will be performed on. The input list will not be altered by the operation.
 
-        stat (string): the specific statistic to return. Possible statistics are "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis".
+        stat (string): the specific statistic to return. Possible statistics are "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis".
 
         to_fill (integer, float, string, list): the value or list of values to be considered missing or invalid. The default is an empty string "" representing a missing value.
 
@@ -1931,7 +1931,7 @@ class _Math():
             raise TypeError("'vals' must be a non-empty list.")
 
         valid_stats = {
-            "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean",
+            "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean",
             "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation",
             "Standard Error", "Variance", "Coefficient of Variation",
             "Skewness", "Kurtosis"
@@ -1948,7 +1948,7 @@ class _Math():
         if not numeric_vals:
             raise ValueError("List has no valid numeric values to compute statistic from.")
 
-        # Compute statistic using your Stats helper
+        # Compute statistic using your my helper
         stat_val = _Stats().descriptive_stat(numeric_vals, stat, decimals)
 
         output = []
@@ -2734,7 +2734,7 @@ class _Stats():
 
         vals (list): the list of values the operation will be performed on. The input list will not be altered by the operation.
 
-        stat (string): the specific statistic to return. Possible statistics are "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"
+        stat (string): the specific statistic to return. Possible statistics are "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"
         
         decimals (integer): the number of decimal places float values will be rounded to."""
         if not isinstance(vals, list) or not vals:
@@ -2742,7 +2742,7 @@ class _Stats():
         if not all(isinstance(v, (int, float)) for v in vals):
             raise ValueError("All elements in 'vals' must be numeric.")
         valid_stats = {
-            "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode",
+            "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode",
             "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance",
             "Coefficient of Variation", "Skewness", "Kurtosis"
         }
@@ -2755,6 +2755,10 @@ class _Stats():
             return len(vals)
         if stat == "Unique Values":
             return len(set(vals))
+        if stat == "First":
+            return vals[0]
+        if stat == "Last":
+            return vals[-1]
         if stat == "Sum":
             return round(sum(vals), decimals)
         if stat == "Max":
@@ -2824,14 +2828,14 @@ class _Stats():
             std_dev = math.sqrt(sum_sqr / lv)
             return round((sum_quart / lv) / (std_dev ** 4), decimals)
 
-    def summary_stats(self, vals, decimals=2, label=""):
-        """Calculate and display all descriptive statistics of the input list ('vals').
+    def summary_stats(self, vals, terminal = False, decimals=2):
+        """Calculate and display all descriptive statistics of the input list ('vals') and return a dictionary of all statistics.
 
         Parameters:
 
         vals (list): the list of values the operation will be performed on. The input list will not be altered by the operation.
 
-        label (string): a label to give the output, if desired.
+        terminal (Boolean): flag to indicate if the result will be printed to a terminal or just returned.
 
         decimals (integer): the number of decimal places float values will be rounded to."""
         if not isinstance(vals, list) or not vals:
@@ -2884,9 +2888,10 @@ class _Stats():
         skew = round((sum_cube / lv) / (variance ** 1.5), decimals)
         kurt = round((sum_quart / lv) / (variance ** 2), decimals)
         output = f"""
-        Descriptive Statistics: {label}
         Count: {lv}
         Unique Values: {len(unique_vals)}
+        First: {vals[0]}
+        Last: {vals[-1]}
         Sum: {vsum}
         Max: {vmax}
         Min: {vmin}
@@ -2904,7 +2909,30 @@ class _Stats():
         Skewness: {skew}
         Kurtosis: {kurt}
         """
-        print(dedent(output).lstrip())
+        if terminal:
+            print(dedent(output).lstrip())
+        return {
+            "Count": lv,
+            "Unique Values": len(unique_vals),
+            "First": vals[0],
+            "Last": vals[-1],
+            "Sum": vsum,
+            "Max": vmax,
+            "Min": vmin,
+            "Range": data_range,
+            "Mean": mean,
+            "Median": medi,
+            "Mode": mode,
+            "IQ1": q1,
+            "IQ3": q3,
+            "IQR": iqr,
+            "Standard Deviation": std_dev,
+            "Standard Error": std_err,
+            "Variance": var,
+            "Coefficient of Variation": cvar,
+            "Skewness": skew,
+            "Kurtosis": kurt
+        }
 
     def root_mean_square_error(self,predicted,observed,decimals = 2):
         """Calculate and return the root-mean-square-error for input lists of predicted ('predicted') and observed ('observed') values.
@@ -9375,7 +9403,7 @@ class _Date():
         if not isinstance(method, str):
             raise ValueError("'method' must be a string.")
         valid_stats = {
-        "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean",
+        "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean",
         "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation",
         "Standard Error", "Variance", "Coefficient of Variation",
         "Skewness", "Kurtosis"}
@@ -9386,16 +9414,7 @@ class _Date():
         stats = _Stats()
         output = []
         for d in v:
-            if method == "First":
-                output.append(d[0])
-            elif method == "Last":
-                output.append(d[-1])
-            elif method == "Count":
-                output.append(len(d))
-            elif method == "Sum":
-                output.append(sum(d))
-            else:
-                output.append(stats.descriptive_stat(d, method))
+            output.append(stats.descriptive_stat(d, method))
         return output
 
     def aggregate_year_single(self,dates,vals,year,method):
@@ -9409,7 +9428,7 @@ class _Date():
 
         year (integer): the single year of data to aggregate. Must be in a 'yyyy' format.
         
-        method (string): the method used to aggregate the data. Possible aggregation methods are "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Skewness", and "Kurtosis" """
+        method (string): the method used to aggregate the data. Possible aggregation methods are "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Skewness", and "Kurtosis" """
         if not isinstance(dates, list) or not isinstance(vals, list):
             raise ValueError("Both 'dates' and 'vals' must be lists.")
         if len(dates) != len(vals):
@@ -9422,7 +9441,7 @@ class _Date():
             raise ValueError("'method' must be a string.")
 
         valid_stats = {
-        "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean",
+        "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean",
         "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation",
         "Standard Error", "Variance", "Coefficient of Variation",
         "Skewness", "Kurtosis"}
@@ -9486,7 +9505,7 @@ class _Date():
 
         vals (list): the list of values the operation will be performed on. The input list will not be altered by the operation.
         
-        season (list): a list of integers corresponding to the months within a particular season. For example, if aggregating within the winter season, [1,2,12] would correspond to the months of January, February, and December, respectively. Month values should be given in ascending order.
+        months (list): a list of integers corresponding to the months within a particular season. For example, if aggregating within the winter season, [1,2,12] would correspond to the months of January, February, and December, respectively. Month values should be given in ascending order.
         
         method (string): the method used to aggregate the data. Possible aggregation methods are "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Skewness", and "Kurtosis" """
         if not isinstance(dates, list) or not isinstance(vals, list):
@@ -9655,7 +9674,7 @@ class _Date():
 
         vals (list): the list of values the operation will be performed on. The input list will not be altered by the operation.
         
-        season (list): a list of integers corresponding to the months within a particular season. For example, if grouping by the winter season, [1,2,12] would correspond to the months of January, February, and December, respectively. Month values should be given in ascending order."""
+        months (list): a list of integers corresponding to the months within a particular season. For example, if grouping by the winter season, [1,2,12] would correspond to the months of January, February, and December, respectively. Month values should be given in ascending order."""
         if not isinstance(dates, list) or not isinstance(vals, list):
             raise ValueError("Both 'dates' and 'vals' must be lists.")
         if len(dates) != len(vals):
@@ -16313,6 +16332,8 @@ class _Table():
         STATS_METHODS = {
             "Count",
             "Unique Values",
+            "First", 
+            "Last",
             "Sum",
             "Max",
             "Min",
@@ -17912,7 +17933,7 @@ class _Table():
 
         column (integer, string): the index or header of the column the operation will be performed on.
 
-        stat (string): the specific statistic to return. Possible statistics are "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"
+        stat (string): the specific statistic to return. Possible statistics are "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"
         
         decimals (integer): the number of decimal places float values will be rounded to."""
         
@@ -17920,7 +17941,7 @@ class _Table():
             raise ValueError(f"Column '{column}' does not exist in Table.")
         
         valid_stats = {
-        "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean",
+        "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean",
         "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation",
         "Standard Error", "Variance", "Coefficient of Variation",
         "Skewness", "Kurtosis"}
@@ -17934,15 +17955,16 @@ class _Table():
             return None
         return _Stats().descriptive_stat(c,stat,decimals)
     
-    def column_summary(self,column,decimals = 2):
-        """Calculate and display all descriptive statistics of the specified column ('column'). Only numeric values (integer or float) in the specified column will be included in the calculation.
+    def column_summary(self,column,terminal = False, decimals = 2):
+        """Calculate all descriptive statistics of the specified column ('column') and return a dictionary of all statistics. Only numeric values (integer or float) in the specified column will be included in the calculation.
 
         Parameters:
 
         column (integer, string): the index or header of the column the operation will be performed on.
 
+        terminal (Boolean): flag to indicate if the result will be printed to a terminal or just returned.
+
         decimals (integer): the number of decimal places float values will be rounded to."""
-        
         if not self.column_exists(column):
             raise ValueError(f"Column '{column}' does not exist in Table.")
         if not isinstance(column,str):
@@ -17952,18 +17974,18 @@ class _Table():
         c = _Math().remove_non_numeric(c)
         if not c:
             return None
-        _Stats().summary_stats(c,decimals,column)
+        return _Stats().summary_stats(c, terminal, decimals)
 
     def column_stats_list(self,stat,decimals = 2):
         """Calculate the specified descriptive statistic ('stat') of each column in the Table and return a list of statistics. Only numeric values (integer or float) in each column will be included in the calculation.
 
         Parameters:
 
-        stat (string): the specific statistic to calculate for each column. Possible statistics are "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"
+        stat (string): the specific statistic to calculate for each column. Possible statistics are "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"
         
         decimals (integer): the number of decimal places float values will be rounded to."""
         valid_stats = {
-        "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean",
+        "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean",
         "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation",
         "Standard Error", "Variance", "Coefficient of Variation",
         "Skewness", "Kurtosis"}
@@ -17990,13 +18012,13 @@ class _Table():
 
         row (integer): the index of the row the operation will be performed on.
 
-        stat (string): the specific statistic to return. Possible statistics are "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"
+        stat (string): the specific statistic to return. Possible statistics are "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"
         
         decimals (integer): the number of decimal places float values will be rounded to."""
         if not isinstance(row, int) or row < 0 or row >= self.num_rows():
             raise ValueError("Row index is out of range.")
         valid_stats = {
-        "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean",
+        "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean",
         "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation",
         "Standard Error", "Variance", "Coefficient of Variation",
         "Skewness", "Kurtosis"}
@@ -18010,33 +18032,16 @@ class _Table():
             return None
         return _Stats().descriptive_stat(r,stat,decimals)
     
-    def row_stat(self,row,decimals = 2):
-        """Calculate and display all descriptive statistics of the specified row ('row'). Only numeric values (integer or float) in the specified row will be included in the calculation.
-
-        Parameters:
-
-        row (integer): the index of the row the operation will be performed on.
-
-        decimals (integer): the number of decimal places float values will be rounded to."""
-        if not isinstance(row, int) or row < 0 or row >= self.num_rows():
-            raise ValueError("Row index is out of range.")
-
-        r = self.get_row(row)
-        r = _Math().remove_non_numeric(r)
-        if not r:
-            return None
-        _Stats().summary_stats(r,decimals,f"Row {row}")
-    
     def row_stat_list(self,stat,decimals = 2):
         """Calculate the specified descriptive statistic ('stat') of each row in the Table and return a list of statistics. Only numeric values (integer or float) in each row will be included in the calculation.
 
         Parameters:
 
-        stat (string): the specific statistic to calculate for each row. Possible statistics are "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"
+        stat (string): the specific statistic to calculate for each row. Possible statistics are "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"
         
         decimals (integer): the number of decimal places float values will be rounded to."""
         valid_stats = {
-        "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean",
+        "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean",
         "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation",
         "Standard Error", "Variance", "Coefficient of Variation",
         "Skewness", "Kurtosis"}
@@ -18330,7 +18335,7 @@ class _Table():
 
         column (integer, string): the index or header of the column the operation will be performed on.
 
-        stat (string): the specific statistic to return. Possible statistics are "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"
+        stat (string): the specific statistic to return. Possible statistics are "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"
         
         to_fill (integer, float, string, list): the value or list of values to be considered missing or invalid. The default is an empty string "" representing a missing value.
         
@@ -18339,7 +18344,7 @@ class _Table():
             raise ValueError(f"Column '{column}' does not exist in Table.")
         
         valid_stats = {
-        "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean",
+        "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean",
         "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation",
         "Standard Error", "Variance", "Coefficient of Variation",
         "Skewness", "Kurtosis"}
@@ -19247,7 +19252,7 @@ class TableTools():
 
     def version(self):
         """Print the current version of TableTools."""
-        print(f"TableTools v1.0.1")
+        print(f"TableTools v1.0.2")
 
     def view_manual(self):
         """Open a web browser to view the TableTools manual."""
@@ -22195,3 +22200,4 @@ class TableTools():
 
                 # EOF marker
                 f.write(b"\x1A")
+

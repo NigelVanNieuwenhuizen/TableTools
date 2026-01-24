@@ -619,14 +619,14 @@
         "name": "column_stat",
         "category": "Table",
         "signature": "(self, column, stat, decimals=2)",
-        "doc": "Calculate and return the specified descriptive statistic ('stat') of the specified column ('column'). Only numeric values (integer or float) in the specified column will be included in the calculation.\n\nParameters:\n\ncolumn (integer, string): the index or header of the column the operation will be performed on.\n\nstat (string): the specific statistic to return. Possible statistics are \"Count\", \"Unique Values\", \"Sum\", \"Max\", \"Min\", \"Range\", \"Mean\", \"Median\", \"Mode\", \"IQ1\", \"IQ3\", \"IQR\", \"Standard Deviation\", \"Standard Error\", \"Variance\", \"Coefficient of Variation\", \"Skewness\", and \"Kurtosis\"\n\ndecimals (integer): the number of decimal places float values will be rounded to.",
+        "doc": "Calculate and return the specified descriptive statistic ('stat') of the specified column ('column'). Only numeric values (integer or float) in the specified column will be included in the calculation.\n\nParameters:\n\ncolumn (integer, string): the index or header of the column the operation will be performed on.\n\nstat (string): the specific statistic to return. Possible statistics are \"Count\", \"Unique Values\", \"First\", \"Last\", \"Sum\", \"Max\", \"Min\", \"Range\", \"Mean\", \"Median\", \"Mode\", \"IQ1\", \"IQ3\", \"IQR\", \"Standard Deviation\", \"Standard Error\", \"Variance\", \"Coefficient of Variation\", \"Skewness\", and \"Kurtosis\"\n\ndecimals (integer): the number of decimal places float values will be rounded to.",
         "example": "result = table.column_stat(column, stat, decimals=2)"
     },
     "column_stats_list": {
         "name": "column_stats_list",
         "category": "Table",
         "signature": "(self, stat, decimals=2)",
-        "doc": "Calculate the specified descriptive statistic ('stat') of each column in the Table and return a list of statistics. Only numeric values (integer or float) in each column will be included in the calculation.\n\nParameters:\n\nstat (string): the specific statistic to calculate for each column. Possible statistics are \"Count\", \"Unique Values\", \"Sum\", \"Max\", \"Min\", \"Range\", \"Mean\", \"Median\", \"Mode\", \"IQ1\", \"IQ3\", \"IQR\", \"Standard Deviation\", \"Standard Error\", \"Variance\", \"Coefficient of Variation\", \"Skewness\", and \"Kurtosis\"\n\ndecimals (integer): the number of decimal places float values will be rounded to.",
+        "doc": "Calculate the specified descriptive statistic ('stat') of each column in the Table and return a list of statistics. Only numeric values (integer or float) in each column will be included in the calculation.\n\nParameters:\n\nstat (string): the specific statistic to calculate for each column. Possible statistics are \"Count\", \"Unique Values\", \"First\", \"Last\", \"Sum\", \"Max\", \"Min\", \"Range\", \"Mean\", \"Median\", \"Mode\", \"IQ1\", \"IQ3\", \"IQR\", \"Standard Deviation\", \"Standard Error\", \"Variance\", \"Coefficient of Variation\", \"Skewness\", and \"Kurtosis\"\n\ndecimals (integer): the number of decimal places float values will be rounded to.",
         "example": "result = table.column_stats_list(stat, decimals=2)"
     },
     "column_subset": {
@@ -639,9 +639,9 @@
     "column_summary": {
         "name": "column_summary",
         "category": "Table",
-        "signature": "(self, column, decimals=2)",
-        "doc": "Calculate and display all descriptive statistics of the specified column ('column'). Only numeric values (integer or float) in the specified column will be included in the calculation.\n\nParameters:\n\ncolumn (integer, string): the index or header of the column the operation will be performed on.\n\ndecimals (integer): the number of decimal places float values will be rounded to.",
-        "example": "result = table.column_summary(column, decimals=2)"
+        "signature": "(self, column, terminal=False, decimals=2)",
+        "doc": "Calculate all descriptive statistics of the specified column ('column') and return a dictionary of all statistics. Only numeric values (integer or float) in the specified column will be included in the calculation.\n\nParameters:\n\ncolumn (integer, string): the index or header of the column the operation will be performed on.\n\nterminal (Boolean): flag to indicate if the result will be printed to a terminal or just returned.\n\ndecimals (integer): the number of decimal places float values will be rounded to.",
+        "example": "result = table.column_summary(column, terminal=False, decimals=2)"
     },
     "compare": {
         "name": "compare",
@@ -780,7 +780,7 @@
         "name": "fill_data_column_stat",
         "category": "Table",
         "signature": "(self, column, stat, to_fill='', decimals=2)",
-        "doc": "Interpolate a new value for each missing or invalid value ('to_fill') in the specified column ('column') using the specified statistics ('stat') of all valid values within that column. Missing or invalid values will be interpolated as floats.\n\nParameters:\n\ncolumn (integer, string): the index or header of the column the operation will be performed on.\n\nstat (string): the specific statistic to return. Possible statistics are \"Count\", \"Unique Values\", \"Sum\", \"Max\", \"Min\", \"Range\", \"Mean\", \"Median\", \"Mode\", \"IQ1\", \"IQ3\", \"IQR\", \"Standard Deviation\", \"Standard Error\", \"Variance\", \"Coefficient of Variation\", \"Skewness\", and \"Kurtosis\"\n\nto_fill (integer, float, string, list): the value or list of values to be considered missing or invalid. The default is an empty string \"\" representing a missing value.\n\ndecimals (integer): the number of decimal places float values will be rounded to.",
+        "doc": "Interpolate a new value for each missing or invalid value ('to_fill') in the specified column ('column') using the specified statistics ('stat') of all valid values within that column. Missing or invalid values will be interpolated as floats.\n\nParameters:\n\ncolumn (integer, string): the index or header of the column the operation will be performed on.\n\nstat (string): the specific statistic to return. Possible statistics are \"Count\", \"Unique Values\", \"First\", \"Last\", \"Sum\", \"Max\", \"Min\", \"Range\", \"Mean\", \"Median\", \"Mode\", \"IQ1\", \"IQ3\", \"IQR\", \"Standard Deviation\", \"Standard Error\", \"Variance\", \"Coefficient of Variation\", \"Skewness\", and \"Kurtosis\"\n\nto_fill (integer, float, string, list): the value or list of values to be considered missing or invalid. The default is an empty string \"\" representing a missing value.\n\ndecimals (integer): the number of decimal places float values will be rounded to.",
         "example": "table.fill_data_column_stat(column, stat, to_fill='', decimals=2)"
     },
     "fill_data_forward": {
@@ -1199,15 +1199,15 @@
     "row_stat": {
         "name": "row_stat",
         "category": "Table",
-        "signature": "(self, row, decimals=2)",
-        "doc": "Calculate and display all descriptive statistics of the specified row ('row'). Only numeric values (integer or float) in the specified row will be included in the calculation.\n\nParameters:\n\nrow (integer): the index of the row the operation will be performed on.\n\ndecimals (integer): the number of decimal places float values will be rounded to.",
-        "example": "result = table.row_stat(row, decimals=2)"
+        "signature": "(self, row, stat, decimals=2)",
+        "doc": "Calculate and return the specified descriptive statistic ('stat') of the specified row ('row'). Only numeric values (integer or float) in the specified row will be included in the calculation.\n\nParameters:\n\nrow (integer): the index of the row the operation will be performed on.\n\nstat (string): the specific statistic to return. Possible statistics are \"Count\", \"Unique Values\", \"First\", \"Last\", \"Sum\", \"Max\", \"Min\", \"Range\", \"Mean\", \"Median\", \"Mode\", \"IQ1\", \"IQ3\", \"IQR\", \"Standard Deviation\", \"Standard Error\", \"Variance\", \"Coefficient of Variation\", \"Skewness\", and \"Kurtosis\"\n\ndecimals (integer): the number of decimal places float values will be rounded to.",
+        "example": "result = table.row_stat(row, stat, decimals=2)"
     },
     "row_stat_list": {
         "name": "row_stat_list",
         "category": "Table",
         "signature": "(self, stat, decimals=2)",
-        "doc": "Calculate the specified descriptive statistic ('stat') of each row in the Table and return a list of statistics. Only numeric values (integer or float) in each row will be included in the calculation.\n\nParameters:\n\nstat (string): the specific statistic to calculate for each row. Possible statistics are \"Count\", \"Unique Values\", \"Sum\", \"Max\", \"Min\", \"Range\", \"Mean\", \"Median\", \"Mode\", \"IQ1\", \"IQ3\", \"IQR\", \"Standard Deviation\", \"Standard Error\", \"Variance\", \"Coefficient of Variation\", \"Skewness\", and \"Kurtosis\"\n\ndecimals (integer): the number of decimal places float values will be rounded to.",
+        "doc": "Calculate the specified descriptive statistic ('stat') of each row in the Table and return a list of statistics. Only numeric values (integer or float) in each row will be included in the calculation.\n\nParameters:\n\nstat (string): the specific statistic to calculate for each row. Possible statistics are \"Count\", \"Unique Values\", \"First\", \"Last\", \"Sum\", \"Max\", \"Min\", \"Range\", \"Mean\", \"Median\", \"Mode\", \"IQ1\", \"IQ3\", \"IQR\", \"Standard Deviation\", \"Standard Error\", \"Variance\", \"Coefficient of Variation\", \"Skewness\", and \"Kurtosis\"\n\ndecimals (integer): the number of decimal places float values will be rounded to.",
         "example": "result = table.row_stat_list(stat, decimals=2)"
     },
     "scatter_plot": {
@@ -1546,7 +1546,7 @@
         "name": "aggregate_season",
         "category": "date",
         "signature": "(self, dates, vals, months, method)",
-        "doc": "Aggregate the values of an input list ('vals') by a specified season ('months') using a corresponding list of dates ('dates') and return a new list.\n\nParameters:\n\ndates (list): the list of dates used to aggregate the input list of values. List of dates must be in a 'yyyy-mm-dd' format. Any character may be used to separate date parts. List of dates must be the same length as the list of values. It is expected that dates are ordered sequentially.\n\nvals (list): the list of values the operation will be performed on. The input list will not be altered by the operation.\n\nseason (list): a list of integers corresponding to the months within a particular season. For example, if aggregating within the winter season, [1,2,12] would correspond to the months of January, February, and December, respectively. Month values should be given in ascending order.\n\nmethod (string): the method used to aggregate the data. Possible aggregation methods are \"Count\", \"Unique Values\", \"First\", \"Last\", \"Sum\", \"Max\", \"Min\", \"Range\", \"Mean\", \"Median\", \"Mode\", \"IQ1\", \"IQ3\", \"IQR\", \"Standard Deviation\", \"Standard Error\", \"Variance\", \"Skewness\", and \"Kurtosis\" ",
+        "doc": "Aggregate the values of an input list ('vals') by a specified season ('months') using a corresponding list of dates ('dates') and return a new list.\n\nParameters:\n\ndates (list): the list of dates used to aggregate the input list of values. List of dates must be in a 'yyyy-mm-dd' format. Any character may be used to separate date parts. List of dates must be the same length as the list of values. It is expected that dates are ordered sequentially.\n\nvals (list): the list of values the operation will be performed on. The input list will not be altered by the operation.\n\nmonths (list): a list of integers corresponding to the months within a particular season. For example, if aggregating within the winter season, [1,2,12] would correspond to the months of January, February, and December, respectively. Month values should be given in ascending order.\n\nmethod (string): the method used to aggregate the data. Possible aggregation methods are \"Count\", \"Unique Values\", \"First\", \"Last\", \"Sum\", \"Max\", \"Min\", \"Range\", \"Mean\", \"Median\", \"Mode\", \"IQ1\", \"IQ3\", \"IQR\", \"Standard Deviation\", \"Standard Error\", \"Variance\", \"Skewness\", and \"Kurtosis\" ",
         "example": "result = tt.date.aggregate_season(dates, vals, months, method)"
     },
     "date.aggregate_year": {
@@ -1560,7 +1560,7 @@
         "name": "aggregate_year_single",
         "category": "date",
         "signature": "(self, dates, vals, year, method)",
-        "doc": "Aggregate the values of an input list ('vals') for a single specified year ('year') using a corresponding list of dates ('dates') and return the aggregated value.\n\nParameters:\n\ndates (list): the list of dates used to aggregate the input list of values. List of dates must be in a 'yyyy-mm-dd' format. Any character may be used to separate date parts. List of dates must be the same length as the list of values. It is expected that dates are ordered sequentially.\n\nvals (list): the list of values the operation will be performed on. The input list will not be altered by the operation.\n\nyear (integer): the single year of data to aggregate. Must be in a 'yyyy' format.\n\nmethod (string): the method used to aggregate the data. Possible aggregation methods are \"Count\", \"Unique Values\", \"Sum\", \"Max\", \"Min\", \"Range\", \"Mean\", \"Median\", \"Mode\", \"IQ1\", \"IQ3\", \"IQR\", \"Standard Deviation\", \"Standard Error\", \"Variance\", \"Skewness\", and \"Kurtosis\" ",
+        "doc": "Aggregate the values of an input list ('vals') for a single specified year ('year') using a corresponding list of dates ('dates') and return the aggregated value.\n\nParameters:\n\ndates (list): the list of dates used to aggregate the input list of values. List of dates must be in a 'yyyy-mm-dd' format. Any character may be used to separate date parts. List of dates must be the same length as the list of values. It is expected that dates are ordered sequentially.\n\nvals (list): the list of values the operation will be performed on. The input list will not be altered by the operation.\n\nyear (integer): the single year of data to aggregate. Must be in a 'yyyy' format.\n\nmethod (string): the method used to aggregate the data. Possible aggregation methods are \"Count\", \"Unique Values\", \"First\", \"Last\", \"Sum\", \"Max\", \"Min\", \"Range\", \"Mean\", \"Median\", \"Mode\", \"IQ1\", \"IQ3\", \"IQR\", \"Standard Deviation\", \"Standard Error\", \"Variance\", \"Skewness\", and \"Kurtosis\" ",
         "example": "result = tt.date.aggregate_year_single(dates, vals, year, method)"
     },
     "date.check_date_continuity": {
@@ -1707,7 +1707,7 @@
         "name": "group_by_season",
         "category": "date",
         "signature": "(self, dates, vals, months)",
-        "doc": "Group the values from an input list ('vals') using a corresponding list of dates ('dates') into lists of values within the specified season ('months') in the date range and return a nested list of season sublists.\n\nParameters:\n\ndates (list): the list of dates used to aggregate the input list of values. List of dates must be in a 'yyyy-mm-dd' format. Any character may be used to separate date parts. List of dates must be the same length as the list of values. It is expected that dates are ordered sequentially.\n\nvals (list): the list of values the operation will be performed on. The input list will not be altered by the operation.\n\nseason (list): a list of integers corresponding to the months within a particular season. For example, if grouping by the winter season, [1,2,12] would correspond to the months of January, February, and December, respectively. Month values should be given in ascending order.",
+        "doc": "Group the values from an input list ('vals') using a corresponding list of dates ('dates') into lists of values within the specified season ('months') in the date range and return a nested list of season sublists.\n\nParameters:\n\ndates (list): the list of dates used to aggregate the input list of values. List of dates must be in a 'yyyy-mm-dd' format. Any character may be used to separate date parts. List of dates must be the same length as the list of values. It is expected that dates are ordered sequentially.\n\nvals (list): the list of values the operation will be performed on. The input list will not be altered by the operation.\n\nmonths (list): a list of integers corresponding to the months within a particular season. For example, if grouping by the winter season, [1,2,12] would correspond to the months of January, February, and December, respectively. Month values should be given in ascending order.",
         "example": "result = tt.date.group_by_season(dates, vals, months)"
     },
     "date.group_by_year": {
@@ -2411,7 +2411,7 @@
         "name": "interpolate_stat",
         "category": "math",
         "signature": "(self, vals, stat, to_fill='', decimals=2)",
-        "doc": "Interpolate a new value for each missing or invalid value ('to_fill') in the specified list ('vals') using the specified statistic ('stat') of all valid values within that list and return a new list. Missing or invalid values will be interpolated as floats.\n\nParameters:\n\nvals (list): the list of values the operation will be performed on. The input list will not be altered by the operation.\n\nstat (string): the specific statistic to return. Possible statistics are \"Count\", \"Unique Values\", \"Sum\", \"Max\", \"Min\", \"Range\", \"Mean\", \"Median\", \"Mode\", \"IQ1\", \"IQ3\", \"IQR\", \"Standard Deviation\", \"Standard Error\", \"Variance\", \"Coefficient of Variation\", \"Skewness\", and \"Kurtosis\".\n\nto_fill (integer, float, string, list): the value or list of values to be considered missing or invalid. The default is an empty string \"\" representing a missing value.\n\ndecimals (integer): the number of decimal places float values will be rounded to. ",
+        "doc": "Interpolate a new value for each missing or invalid value ('to_fill') in the specified list ('vals') using the specified statistic ('stat') of all valid values within that list and return a new list. Missing or invalid values will be interpolated as floats.\n\nParameters:\n\nvals (list): the list of values the operation will be performed on. The input list will not be altered by the operation.\n\nstat (string): the specific statistic to return. Possible statistics are \"Count\", \"Unique Values\", \"First\", \"Last\", \"Sum\", \"Max\", \"Min\", \"Range\", \"Mean\", \"Median\", \"Mode\", \"IQ1\", \"IQ3\", \"IQR\", \"Standard Deviation\", \"Standard Error\", \"Variance\", \"Coefficient of Variation\", \"Skewness\", and \"Kurtosis\".\n\nto_fill (integer, float, string, list): the value or list of values to be considered missing or invalid. The default is an empty string \"\" representing a missing value.\n\ndecimals (integer): the number of decimal places float values will be rounded to. ",
         "example": "result = tt.math.interpolate_stat(vals, stat, to_fill='', decimals=2)"
     },
     "math.is_even_odd": {
@@ -3440,7 +3440,7 @@
         "name": "descriptive_stat",
         "category": "stats",
         "signature": "(self, vals, stat, decimals=2)",
-        "doc": "Calculate and return the specified descriptive statistic ('stat') of the input list ('vals').\n\nParameters:\n\nvals (list): the list of values the operation will be performed on. The input list will not be altered by the operation.\n\nstat (string): the specific statistic to return. Possible statistics are \"Count\", \"Unique Values\", \"Sum\", \"Max\", \"Min\", \"Range\", \"Mean\", \"Median\", \"Mode\", \"IQ1\", \"IQ3\", \"IQR\", \"Standard Deviation\", \"Standard Error\", \"Variance\", \"Coefficient of Variation\", \"Skewness\", and \"Kurtosis\"\n\ndecimals (integer): the number of decimal places float values will be rounded to.",
+        "doc": "Calculate and return the specified descriptive statistic ('stat') of the input list ('vals').\n\nParameters:\n\nvals (list): the list of values the operation will be performed on. The input list will not be altered by the operation.\n\nstat (string): the specific statistic to return. Possible statistics are \"Count\", \"Unique Values\", \"First\", \"Last\", \"Sum\", \"Max\", \"Min\", \"Range\", \"Mean\", \"Median\", \"Mode\", \"IQ1\", \"IQ3\", \"IQR\", \"Standard Deviation\", \"Standard Error\", \"Variance\", \"Coefficient of Variation\", \"Skewness\", and \"Kurtosis\"\n\ndecimals (integer): the number of decimal places float values will be rounded to.",
         "example": "result = tt.stats.descriptive_stat(vals, stat, decimals=2)"
     },
     "stats.display_toolbox_functions": {
@@ -3656,9 +3656,9 @@
     "stats.summary_stats": {
         "name": "summary_stats",
         "category": "stats",
-        "signature": "(self, vals, decimals=2, label='')",
-        "doc": "Calculate and display all descriptive statistics of the input list ('vals').\n\nParameters:\n\nvals (list): the list of values the operation will be performed on. The input list will not be altered by the operation.\n\nlabel (string): a label to give the output, if desired.\n\ndecimals (integer): the number of decimal places float values will be rounded to.",
-        "example": "tt.stats.summary_stats(vals, decimals=2, label='')"
+        "signature": "(self, vals, terminal=False, decimals=2)",
+        "doc": "Calculate and display all descriptive statistics of the input list ('vals') and return a dictionary of all statistics.\n\nParameters:\n\nvals (list): the list of values the operation will be performed on. The input list will not be altered by the operation.\n\nterminal (Boolean): flag to indicate if the result will be printed to a terminal or just returned.\n\ndecimals (integer): the number of decimal places float values will be rounded to.",
+        "example": "result = tt.stats.summary_stats(vals, terminal=False, decimals=2)"
     },
     "stats.two_proportion_z_test": {
         "name": "two_proportion_z_test",

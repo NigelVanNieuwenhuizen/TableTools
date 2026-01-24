@@ -60,7 +60,7 @@
 
             <div class="main-content">
                 <h1 id="top">TableTools Manual</h1>
-                <p class="updated-timestamp">Last Updated: 2026-01-15 08:03:35</p>
+                <p class="updated-timestamp">Last Updated: 2026-01-24 15:03:56</p>
 
                 <div class="section intro-text">
                     
@@ -838,14 +838,14 @@ print(f"The mean $\pm$ one standard deviation: {tt.symbols.PLUS_MINUS}")
     <div class="function-doc" id="table-column_stat">
         <h4><code>column_stat(column, stat, decimals=...)</code></h4>
         <p>Calculate and return the specified descriptive statistic ('stat') of the specified column ('column'). Only numeric values (integer or float) in the specified column will be included in the calculation.</p>
-        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>column (integer, string)</code>: the index or header of the column the operation will be performed on.</p><p><code>stat (string)</code>: the specific statistic to return. Possible statistics are "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"</p><p><code>decimals (integer)</code>: the number of decimal places float values will be rounded to.</p></div>
+        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>column (integer, string)</code>: the index or header of the column the operation will be performed on.</p><p><code>stat (string)</code>: the specific statistic to return. Possible statistics are "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"</p><p><code>decimals (integer)</code>: the number of decimal places float values will be rounded to.</p></div>
         <p><strong>Example:</strong></p><pre><code>result = table.column_stat(column, stat, decimals=2)</code></pre>
     </div>
     
     <div class="function-doc" id="table-column_stats_list">
         <h4><code>column_stats_list(stat, decimals=...)</code></h4>
         <p>Calculate the specified descriptive statistic ('stat') of each column in the Table and return a list of statistics. Only numeric values (integer or float) in each column will be included in the calculation.</p>
-        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>stat (string)</code>: the specific statistic to calculate for each column. Possible statistics are "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"</p><p><code>decimals (integer)</code>: the number of decimal places float values will be rounded to.</p></div>
+        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>stat (string)</code>: the specific statistic to calculate for each column. Possible statistics are "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"</p><p><code>decimals (integer)</code>: the number of decimal places float values will be rounded to.</p></div>
         <p><strong>Example:</strong></p><pre><code>result = table.column_stats_list(stat, decimals=2)</code></pre>
     </div>
     
@@ -857,10 +857,10 @@ print(f"The mean $\pm$ one standard deviation: {tt.symbols.PLUS_MINUS}")
     </div>
     
     <div class="function-doc" id="table-column_summary">
-        <h4><code>column_summary(column, decimals=...)</code></h4>
-        <p>Calculate and display all descriptive statistics of the specified column ('column'). Only numeric values (integer or float) in the specified column will be included in the calculation.</p>
-        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>column (integer, string)</code>: the index or header of the column the operation will be performed on.</p><p><code>decimals (integer)</code>: the number of decimal places float values will be rounded to.</p></div>
-        <p><strong>Example:</strong></p><pre><code>result = table.column_summary(column, decimals=2)</code></pre>
+        <h4><code>column_summary(column, terminal=..., decimals=...)</code></h4>
+        <p>Calculate all descriptive statistics of the specified column ('column') and return a dictionary of all statistics. Only numeric values (integer or float) in the specified column will be included in the calculation.</p>
+        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>column (integer, string)</code>: the index or header of the column the operation will be performed on.</p><p><code>terminal (Boolean)</code>: flag to indicate if the result will be printed to a terminal or just returned.</p><p><code>decimals (integer)</code>: the number of decimal places float values will be rounded to.</p></div>
+        <p><strong>Example:</strong></p><pre><code>result = table.column_summary(column, terminal=False, decimals=2)</code></pre>
     </div>
     
     <div class="function-doc" id="table-compare">
@@ -1006,7 +1006,7 @@ print(f"The mean $\pm$ one standard deviation: {tt.symbols.PLUS_MINUS}")
     <div class="function-doc" id="table-fill_data_column_stat">
         <h4><code>fill_data_column_stat(column, stat, to_fill=..., decimals=...)</code></h4>
         <p>Interpolate a new value for each missing or invalid value ('to_fill') in the specified column ('column') using the specified statistics ('stat') of all valid values within that column. Missing or invalid values will be interpolated as floats.</p>
-        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>column (integer, string)</code>: the index or header of the column the operation will be performed on.</p><p><code>stat (string)</code>: the specific statistic to return. Possible statistics are "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"</p><p><code>to_fill (integer, float, string, list)</code>: the value or list of values to be considered missing or invalid. The default is an empty string "" representing a missing value.</p><p><code>decimals (integer)</code>: the number of decimal places float values will be rounded to.</p></div>
+        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>column (integer, string)</code>: the index or header of the column the operation will be performed on.</p><p><code>stat (string)</code>: the specific statistic to return. Possible statistics are "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"</p><p><code>to_fill (integer, float, string, list)</code>: the value or list of values to be considered missing or invalid. The default is an empty string "" representing a missing value.</p><p><code>decimals (integer)</code>: the number of decimal places float values will be rounded to.</p></div>
         <p><strong>Example:</strong></p><pre><code>table.fill_data_column_stat(column, stat, to_fill='', decimals=2)</code></pre>
     </div>
     
@@ -1424,16 +1424,16 @@ print(f"The mean $\pm$ one standard deviation: {tt.symbols.PLUS_MINUS}")
     </div>
     
     <div class="function-doc" id="table-row_stat">
-        <h4><code>row_stat(row, decimals=...)</code></h4>
-        <p>Calculate and display all descriptive statistics of the specified row ('row'). Only numeric values (integer or float) in the specified row will be included in the calculation.</p>
-        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>row (integer)</code>: the index of the row the operation will be performed on.</p><p><code>decimals (integer)</code>: the number of decimal places float values will be rounded to.</p></div>
-        <p><strong>Example:</strong></p><pre><code>result = table.row_stat(row, decimals=2)</code></pre>
+        <h4><code>row_stat(row, stat, decimals=...)</code></h4>
+        <p>Calculate and return the specified descriptive statistic ('stat') of the specified row ('row'). Only numeric values (integer or float) in the specified row will be included in the calculation.</p>
+        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>row (integer)</code>: the index of the row the operation will be performed on.</p><p><code>stat (string)</code>: the specific statistic to return. Possible statistics are "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"</p><p><code>decimals (integer)</code>: the number of decimal places float values will be rounded to.</p></div>
+        <p><strong>Example:</strong></p><pre><code>result = table.row_stat(row, stat, decimals=2)</code></pre>
     </div>
     
     <div class="function-doc" id="table-row_stat_list">
         <h4><code>row_stat_list(stat, decimals=...)</code></h4>
         <p>Calculate the specified descriptive statistic ('stat') of each row in the Table and return a list of statistics. Only numeric values (integer or float) in each row will be included in the calculation.</p>
-        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>stat (string)</code>: the specific statistic to calculate for each row. Possible statistics are "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"</p><p><code>decimals (integer)</code>: the number of decimal places float values will be rounded to.</p></div>
+        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>stat (string)</code>: the specific statistic to calculate for each row. Possible statistics are "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"</p><p><code>decimals (integer)</code>: the number of decimal places float values will be rounded to.</p></div>
         <p><strong>Example:</strong></p><pre><code>result = table.row_stat_list(stat, decimals=2)</code></pre>
     </div>
     
@@ -2270,7 +2270,7 @@ tt.display_processing_time()</code></pre>
     <div class="function-doc" id="date-aggregate_season">
         <h4><code>aggregate_season(dates, vals, months, method)</code></h4>
         <p>Aggregate the values of an input list ('vals') by a specified season ('months') using a corresponding list of dates ('dates') and return a new list.</p>
-        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>dates (list)</code>: the list of dates used to aggregate the input list of values. List of dates must be in a 'yyyy-mm-dd' format. Any character may be used to separate date parts. List of dates must be the same length as the list of values. It is expected that dates are ordered sequentially.</p><p><code>vals (list)</code>: the list of values the operation will be performed on. The input list will not be altered by the operation.</p><p><code>season (list)</code>: a list of integers corresponding to the months within a particular season. For example, if aggregating within the winter season, [1,2,12] would correspond to the months of January, February, and December, respectively. Month values should be given in ascending order.</p><p><code>method (string)</code>: the method used to aggregate the data. Possible aggregation methods are "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Skewness", and "Kurtosis"</p></div>
+        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>dates (list)</code>: the list of dates used to aggregate the input list of values. List of dates must be in a 'yyyy-mm-dd' format. Any character may be used to separate date parts. List of dates must be the same length as the list of values. It is expected that dates are ordered sequentially.</p><p><code>vals (list)</code>: the list of values the operation will be performed on. The input list will not be altered by the operation.</p><p><code>months (list)</code>: a list of integers corresponding to the months within a particular season. For example, if aggregating within the winter season, [1,2,12] would correspond to the months of January, February, and December, respectively. Month values should be given in ascending order.</p><p><code>method (string)</code>: the method used to aggregate the data. Possible aggregation methods are "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Skewness", and "Kurtosis"</p></div>
         <p><strong>Example:</strong></p><pre><code>result = tt.date.aggregate_season(dates, vals, months, method)</code></pre>
     </div>
     
@@ -2284,7 +2284,7 @@ tt.display_processing_time()</code></pre>
     <div class="function-doc" id="date-aggregate_year_single">
         <h4><code>aggregate_year_single(dates, vals, year, method)</code></h4>
         <p>Aggregate the values of an input list ('vals') for a single specified year ('year') using a corresponding list of dates ('dates') and return the aggregated value.</p>
-        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>dates (list)</code>: the list of dates used to aggregate the input list of values. List of dates must be in a 'yyyy-mm-dd' format. Any character may be used to separate date parts. List of dates must be the same length as the list of values. It is expected that dates are ordered sequentially.</p><p><code>vals (list)</code>: the list of values the operation will be performed on. The input list will not be altered by the operation.</p><p><code>year (integer)</code>: the single year of data to aggregate. Must be in a 'yyyy' format.</p><p><code>method (string)</code>: the method used to aggregate the data. Possible aggregation methods are "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Skewness", and "Kurtosis"</p></div>
+        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>dates (list)</code>: the list of dates used to aggregate the input list of values. List of dates must be in a 'yyyy-mm-dd' format. Any character may be used to separate date parts. List of dates must be the same length as the list of values. It is expected that dates are ordered sequentially.</p><p><code>vals (list)</code>: the list of values the operation will be performed on. The input list will not be altered by the operation.</p><p><code>year (integer)</code>: the single year of data to aggregate. Must be in a 'yyyy' format.</p><p><code>method (string)</code>: the method used to aggregate the data. Possible aggregation methods are "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Skewness", and "Kurtosis"</p></div>
         <p><strong>Example:</strong></p><pre><code>result = tt.date.aggregate_year_single(dates, vals, year, method)</code></pre>
     </div>
     
@@ -2424,7 +2424,7 @@ tt.display_processing_time()</code></pre>
     <div class="function-doc" id="date-group_by_season">
         <h4><code>group_by_season(dates, vals, months)</code></h4>
         <p>Group the values from an input list ('vals') using a corresponding list of dates ('dates') into lists of values within the specified season ('months') in the date range and return a nested list of season sublists.</p>
-        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>dates (list)</code>: the list of dates used to aggregate the input list of values. List of dates must be in a 'yyyy-mm-dd' format. Any character may be used to separate date parts. List of dates must be the same length as the list of values. It is expected that dates are ordered sequentially.</p><p><code>vals (list)</code>: the list of values the operation will be performed on. The input list will not be altered by the operation.</p><p><code>season (list)</code>: a list of integers corresponding to the months within a particular season. For example, if grouping by the winter season, [1,2,12] would correspond to the months of January, February, and December, respectively. Month values should be given in ascending order.</p></div>
+        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>dates (list)</code>: the list of dates used to aggregate the input list of values. List of dates must be in a 'yyyy-mm-dd' format. Any character may be used to separate date parts. List of dates must be the same length as the list of values. It is expected that dates are ordered sequentially.</p><p><code>vals (list)</code>: the list of values the operation will be performed on. The input list will not be altered by the operation.</p><p><code>months (list)</code>: a list of integers corresponding to the months within a particular season. For example, if grouping by the winter season, [1,2,12] would correspond to the months of January, February, and December, respectively. Month values should be given in ascending order.</p></div>
         <p><strong>Example:</strong></p><pre><code>result = tt.date.group_by_season(dates, vals, months)</code></pre>
     </div>
     
@@ -2986,7 +2986,7 @@ tt.display_processing_time()</code></pre>
     <div class="function-doc" id="math-interpolate_stat">
         <h4><code>interpolate_stat(vals, stat, to_fill=..., decimals=...)</code></h4>
         <p>Interpolate a new value for each missing or invalid value ('to_fill') in the specified list ('vals') using the specified statistic ('stat') of all valid values within that list and return a new list. Missing or invalid values will be interpolated as floats.</p>
-        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>vals (list)</code>: the list of values the operation will be performed on. The input list will not be altered by the operation.</p><p><code>stat (string)</code>: the specific statistic to return. Possible statistics are "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis".</p><p><code>to_fill (integer, float, string, list)</code>: the value or list of values to be considered missing or invalid. The default is an empty string "" representing a missing value.</p><p><code>decimals (integer)</code>: the number of decimal places float values will be rounded to.</p></div>
+        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>vals (list)</code>: the list of values the operation will be performed on. The input list will not be altered by the operation.</p><p><code>stat (string)</code>: the specific statistic to return. Possible statistics are "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis".</p><p><code>to_fill (integer, float, string, list)</code>: the value or list of values to be considered missing or invalid. The default is an empty string "" representing a missing value.</p><p><code>decimals (integer)</code>: the number of decimal places float values will be rounded to.</p></div>
         <p><strong>Example:</strong></p><pre><code>result = tt.math.interpolate_stat(vals, stat, to_fill='', decimals=2)</code></pre>
     </div>
     
@@ -3838,7 +3838,7 @@ tt.display_processing_time()</code></pre>
     <div class="function-doc" id="stats-descriptive_stat">
         <h4><code>descriptive_stat(vals, stat, decimals=...)</code></h4>
         <p>Calculate and return the specified descriptive statistic ('stat') of the input list ('vals').</p>
-        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>vals (list)</code>: the list of values the operation will be performed on. The input list will not be altered by the operation.</p><p><code>stat (string)</code>: the specific statistic to return. Possible statistics are "Count", "Unique Values", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"</p><p><code>decimals (integer)</code>: the number of decimal places float values will be rounded to.</p></div>
+        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>vals (list)</code>: the list of values the operation will be performed on. The input list will not be altered by the operation.</p><p><code>stat (string)</code>: the specific statistic to return. Possible statistics are "Count", "Unique Values", "First", "Last", "Sum", "Max", "Min", "Range", "Mean", "Median", "Mode", "IQ1", "IQ3", "IQR", "Standard Deviation", "Standard Error", "Variance", "Coefficient of Variation", "Skewness", and "Kurtosis"</p><p><code>decimals (integer)</code>: the number of decimal places float values will be rounded to.</p></div>
         <p><strong>Example:</strong></p><pre><code>result = tt.stats.descriptive_stat(vals, stat, decimals=2)</code></pre>
     </div>
     
@@ -4046,10 +4046,10 @@ tt.display_processing_time()</code></pre>
     </div>
     
     <div class="function-doc" id="stats-summary_stats">
-        <h4><code>summary_stats(vals, decimals=..., label=...)</code></h4>
-        <p>Calculate and display all descriptive statistics of the input list ('vals').</p>
-        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>vals (list)</code>: the list of values the operation will be performed on. The input list will not be altered by the operation.</p><p><code>label (string)</code>: a label to give the output, if desired.</p><p><code>decimals (integer)</code>: the number of decimal places float values will be rounded to.</p></div>
-        <p><strong>Example:</strong></p><pre><code>tt.stats.summary_stats(vals, decimals=2, label='')</code></pre>
+        <h4><code>summary_stats(vals, terminal=..., decimals=...)</code></h4>
+        <p>Calculate and display all descriptive statistics of the input list ('vals') and return a dictionary of all statistics.</p>
+        <div class='parameters'><p><strong>Parameters:</strong></p><p><code>vals (list)</code>: the list of values the operation will be performed on. The input list will not be altered by the operation.</p><p><code>terminal (Boolean)</code>: flag to indicate if the result will be printed to a terminal or just returned.</p><p><code>decimals (integer)</code>: the number of decimal places float values will be rounded to.</p></div>
+        <p><strong>Example:</strong></p><pre><code>result = tt.stats.summary_stats(vals, terminal=False, decimals=2)</code></pre>
     </div>
     
     <div class="function-doc" id="stats-two_proportion_z_test">
