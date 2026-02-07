@@ -3,13 +3,13 @@
 # TableTools
 # Author: Nigel Van Nieuwenhuizen, MSc
 # Created: February 2021
-# Last Updated: January 2026
+# Last Updated: February 2026
 
 # Global imports
 import math, random, itertools, operator, statistics, datetime, copy, os, io
 
 # Toolbox classes
-class _ListOps():
+class _ListOps(): 
     """A set of general functions for manipulating lists and nested lists."""
     # ============================================================
     # PRIVATE METHODS AND CLASS ATTRIBUTES AND FUNCTION DISPLAY
@@ -349,6 +349,46 @@ class _ListOps():
         output = vals[:]  # copy to avoid mutating input
         len_vals = len(vals)
         return output + [pad_val for _ in range(new_len - len_vals)]
+
+    def extract_evenly_spaced_values(self,vals, k):
+        """Extract k evenly-spaced values from an input list of values ('vals') and return a list of values. The first and last value of the input list will be included
+        
+        Parameters:
+        
+        vals (list): the list of values the operation will be performed on. The input list will not be altered by the operation.
+        
+        k (integer): the number of values to extract from the input list, including the first and last."""
+        if not isinstance(vals, list) or not vals:
+            raise ValueError("'vals' must be a non-empty list.")
+        if not isinstance(k, int):
+            raise ValueError("'k' must be an integer.")
+        if k < 2:
+            raise ValueError("'k' must be at least 2.")
+        if k > len(vals):
+            return vals[:]
+        
+        indices = [int(round(i * (len(vals) - 1) / (k - 1)))for i in range(k)]
+        return [vals[i] for i in indices]
+
+    def extract_evenly_spaced_indices(self,vals, k):
+        """Extract k evenly-spaced value indices from an input list of values ('vals') and return a list of indices. The first and last index of the input list will be included
+        
+        Parameters:
+        
+        vals (list): the list of values the operation will be performed on. The input list will not be altered by the operation.
+        
+        k (integer): the number of indices to extract from the input list, including the first and last."""
+        if not isinstance(vals, list) or not vals:
+            raise ValueError("'vals' must be a non-empty list.")
+        if not isinstance(k, int):
+            raise ValueError("'k' must be an integer.")
+        if k < 2:
+            raise ValueError("'k' must be at least 2.")
+        if k >= len(vals):
+            return list(range(len(vals)))
+        
+        return [int(round(i * (len(vals) - 1) / (k - 1)))for i in range(k)]
+
 
     # ============================================================
     # GROUPING OPERATIONS
@@ -3038,7 +3078,7 @@ class _Stats():
         if not isinstance(vals, list) or not vals:
             raise TypeError("'vals' must be a non-empty list.")
         return vals.count(value)
-    
+       
     def unique_freq(self,vals):
         """Determine the unique values in the input list ('vals') and calculate the frequency with which each unique value appears. Two lists are returned: a list of unique values and a list of unique value frequencies.
 
@@ -3047,18 +3087,34 @@ class _Stats():
         vals (list): the list of values the operation will be performed on. The input list will not be altered by the operation."""
         if not isinstance(vals, list) or not vals:
             raise TypeError("'vals' must be a non-empty list.")
-        unique_vals = []
-        counts = []
+        counts = {}
+        order = []
 
         for v in vals:
-            if v not in unique_vals:
-                unique_vals.append(v)
-                counts.append(1)
+            if v in counts:
+                counts[v] += 1
             else:
-                counts[unique_vals.index(v)] += 1
+                counts[v] = 1
+                order.append(v)
 
-        return unique_vals, counts
-  
+        # Build parallel lists in order of first appearance
+        unique_vals = order
+        freq = [counts[v] for v in order]
+
+        return unique_vals, freq
+
+    def k_most_common(self, vals, k):
+        """Determine the unique values in the input list ('vals') and return the k most frequent values.
+
+        Parameters:
+
+        vals (list): the list of values the operation will be performed on. The input list will not be altered by the operation.
+        
+        k (integer): the number of most frequent values to return."""
+        unique_vals, counts = self.unique_freq(vals)
+        freq = sorted(zip(unique_vals, counts), key=lambda x: x[1], reverse=True)
+        return [val for val, _ in freq[:k]]
+
     # ============================================================
     # CONTINGENCY ANALYSIS
     # ============================================================
@@ -9200,7 +9256,7 @@ class _Date():
     # ============================================================    
     
     def get_date_range(self,vals):
-        """Return a tuple of (start date, end date) from the input list ('vals') of dates. This function assumes that the date list is ordered.
+        """Return a tuple of (start date, end date) from the input list ('vals') of dates.
         
         Parameters:
         
@@ -9210,7 +9266,7 @@ class _Date():
         if len(vals) < 2:
             raise ValueError("Date list must contain at least two elements.")
 
-        return vals[0],vals[-1]
+        return min(vals),max(vals)
 
     def get_years(self,vals,dtype="integer"):
         """Separate the years from each date in an input list of dates ('vals') and return a new list of years.
@@ -9378,6 +9434,72 @@ class _Date():
         # Filter using lexicographic comparison of normalized ISO strings
         output = [d for d in dates if ops[condition](norm(d), thr)]
         return output
+
+    def optimal_overlap_range(self,date_ranges, tolerance=0.05):
+        """Determine the 'optimal' overlapping date range across many input date ranges ('dates') by evaluating all combinations of start and end dates from the input dates and assigning a score based on number of overlapping date ranges and the total days captured by each combination. Optimal is defined as the start and end date that maximizes the number of input ranges that overlap within the given tolerance of days while favouring longer shared durations. Returns a dictionary of "best_start" (i.e., optimal start date), "best_end" (i.e., optimal end date), "count" (i.e, the number of input date ranges that overlap the optimal range within the tolerance), "percent" (i.e, the percentage of input date ranges that overlap the optimal range within the tolerance), and "days" (i.e., the number of days in the optimal date range). 
+
+        Parameters:
+
+        date_sequences (list): a nested list of date range lists. Individual dates must be in ISO format (i.e., yyyy-mm-dd)
+            
+        tolerance (float): the tolerance threshold for required overlap as a percent of shared days between date ranges."""
+        if not isinstance(date_ranges,list):
+            raise ValueError("'date_ranges' must be a list.")
+        for r in date_ranges:
+            if not isinstance(r, list):
+                raise ValueError("Each date range in 'date_ranges' must be a list.")
+            if not all(isinstance(d,str) for d in r):
+                raise ValueError("Each date range in 'date_ranges' must be a list of ISO strings.")
+        if not isinstance(tolerance,float):
+            raise ValueError("'tolerance' must be a floating point value")
+        if tolerance < 0 or tolerance > 1:
+            raise ValueError("'tolerance' must be between 0.0 and 1.0 (inclusive).")
+        starts = [datetime.datetime.fromisoformat(min(seq)) for seq in date_ranges]
+        ends   = [datetime.datetime.fromisoformat(max(seq)) for seq in date_ranges]
+
+        results = []
+
+        for s_dt in starts:
+            for e_dt in ends:
+                if s_dt >= e_dt:
+                    continue
+
+                target_seconds = (e_dt - s_dt).total_seconds()
+                duration_days = (e_dt - s_dt).days
+
+                count = 0
+
+                for seq_start, seq_end in zip(starts, ends):
+                    overlap_start = max(s_dt, seq_start)
+                    overlap_end   = min(e_dt, seq_end)
+
+                    if overlap_start < overlap_end:
+                        overlap_seconds = (overlap_end - overlap_start).total_seconds()
+                        if overlap_seconds / target_seconds >= (1 - tolerance):
+                            count += 1
+
+                # use an internal score so that it's not just the number of date ranges, but the total days of each
+                score = count * duration_days
+
+                results.append({
+                    "start": s_dt,
+                    "end": e_dt,
+                    "count": count,
+                    "days": duration_days,
+                    "score": score,
+                })
+
+        best = max(results, key=lambda x: x["score"])
+
+        percent = (best["count"] / len(date_ranges)) * 100
+
+        return {
+            "best_start": best["start"].date().isoformat(), #start date of the optimal date range
+            "best_end": best["end"].date().isoformat(), #end date of the optimal date range
+            "count": best["count"], #number of input date ranges captured by the optimal range
+            "percent": percent, #percentage of input date ranges captured by the optimal range
+            "days": best["days"], #number of days in optimal date range
+        }
 
     # ============================================================
     # TEMPORAL AGGREGATION
@@ -9726,6 +9848,45 @@ class _Plot():
         """If the toolbox is printed, display a message."""
         return ".plot: a set of functions for visualizing lists of data with common plot types."
     
+    def _normalize_html_filename(self,filename):
+        """Ensure the output filename of plots ends with .html.
+        
+        Parameters:
+        
+        filename (string): the filename to normalize."""
+        directory = os.path.dirname(filename)
+        base = os.path.basename(filename)
+        root, ext = os.path.splitext(base)
+
+        # Normalize to .html
+        if ext.lower() != ".html":
+            base = root + ".html"
+
+        return os.path.join(directory, base)
+
+    def _compute_categorical_ticks(self,n, num_ticks):
+        """Compute the positions of categorical tick labels to sample.
+        
+        Parameters:
+        
+        n (integer): the length of the list to sample.
+        
+        num_ticks (integer): the number of ticks to derive samples for."""
+        # Always include first and last
+        num_ticks = num_ticks + 1
+        positions = [0]
+
+        if num_ticks > 2:
+            k = num_ticks - 2
+            step = (n - 2) / (k + 1)
+
+            for i in range(1, k + 1):
+                pos = int(round(1 + i * step))
+                positions.append(pos)
+
+        positions.append(n - 1)
+        return positions
+
     def display_toolbox_functions(self):
         """Display a list of all available functions within this toolbox."""
         print(f"Number of {__class__.__name__[1:]} functions: {len([f for f in dir(__class__) if not f.startswith('__')])}")
@@ -9736,12 +9897,12 @@ class _Plot():
     # CONTINUOUS PLOTS
     # ============================================================
 
-    def scatter_plot(self,x_var, y_vars,title="Scatter Plot",x_label="Independent Variable",y_label="Dependent Variable",num_ticks=5,point_size=3,point_colour=None, point_style=None,trendline=False,trend_colour=None,legend=False,point_labels=None,tooltip_threshold=100,margin=60, filename="scatter_plot.svg",open_browser=False):
+    def scatter_plot(self,x_var, y_vars,title="Scatter Plot",x_label="Independent Variable",y_label="Dependent Variable",num_ticks=5,point_size=3,point_colour=None, point_style=None,trendline=False,trend_colour=None,legend=False,point_labels=None,tooltip_threshold=100,margin=60, filename="scatter_plot.html",open_browser=False):
         """Create a scatter plot for a single independent variable ('x_var') and one or more dependent variables ('y_vars') and configure plot elements.
 
         Parameters:
 
-        x_var (list): the list of values representing the independent variable to be visualized. Values must be numerical (integer or floating point).
+        x_var (list): the list of values representing the independent variable to be visualized. Values may be numerical (integer or floating point) or categorical strings such as dates.
 
         y_vars (list): the list of values representing the dependent variable to be visualized, or a nested list if there are multiple dependent variables to be visualized. Values must be numerical (integer or floating point). Each series must match the length of x_var.
 
@@ -9771,13 +9932,19 @@ class _Plot():
         
         margin (integer): the margin size (in pixels) around the plot area. 
         
-        filename (string): the name of the output SVG file. Include the output file path in the string or prepend tt.get_out_dir() to the filename.
+        filename (string): the name of the output file. Include the output file path in the string or prepend tt.get_out_dir() to the filename.
 
-        open_browser (Boolean): flag to indicate if the generated SVG file should be automatically opened in the default web browser."""
+        open_browser (Boolean): flag to indicate if the generated file should be automatically opened in the default web browser."""
         if not isinstance(x_var, list) or not x_var:
-            raise ValueError("'x_var' must be a non-empty list of numeric values.")
-        if not all(isinstance(v, (int, float)) for v in x_var):
-            raise ValueError("All values in 'x_var' must be numeric (int or float).")
+            raise ValueError("'x_var' must be a non-empty list of values.")
+        x_is_cat = False
+        if all(isinstance(v,str) for v in x_var):
+            cat_ticks = [x_var[i] for i in self._compute_categorical_ticks(len(x_var),num_ticks)]
+            x_var = [i for i in range(len(x_var))]
+            x_is_cat = True
+        else:
+            if not all(isinstance(v, (int, float)) for v in x_var):
+                raise ValueError("All values in 'x_var' must be numeric (int or float).")
         if not isinstance(y_vars, list):
             raise ValueError("'y_vars' must be a list of numeric values or a list of lists of numeric values.")
         is_flat = all(isinstance(v, (int, float)) for v in y_vars)
@@ -9851,6 +10018,7 @@ class _Plot():
             raise ValueError("'margin' must be a non-negative integer.")
         if not isinstance(filename, str):
             raise ValueError("'filename' must be a string.")
+        filename = self._normalize_html_filename(filename)
         if not isinstance(open_browser, bool):
             raise ValueError("'open_browser' must be a Boolean value.")
         
@@ -9994,9 +10162,14 @@ class _Plot():
         for i in range(num_ticks + 1):
             # X ticks
             tx = plot_left + i * (plot_right - plot_left) / num_ticks
-            valx = xmin + i * (xmax - xmin) / num_ticks
+            if x_is_cat:
+                valx = cat_ticks[i]
+                buf.write(f'  <text x="{tx}" y="{plot_bottom+20}" text-anchor="middle" font-size="12">{valx}</text>\n')
+            else:
+                valx = xmin + i * (xmax - xmin) / num_ticks
+                buf.write(f'  <text x="{tx}" y="{plot_bottom+20}" text-anchor="middle" font-size="12">{valx:.1f}</text>\n')
+            # valx = xmin + i * (xmax - xmin) / num_ticks
             buf.write(f'  <line x1="{tx}" y1="{plot_bottom}" x2="{tx}" y2="{plot_bottom+5}" stroke="black"/>\n')
-            buf.write(f'  <text x="{tx}" y="{plot_bottom+20}" text-anchor="middle" font-size="12">{valx:.1f}</text>\n')
 
             # Y ticks
             ty = plot_bottom - i * (plot_bottom - plot_top) / num_ticks
@@ -10005,7 +10178,7 @@ class _Plot():
             buf.write(f'  <text x="{plot_left-10}" y="{ty+4}" text-anchor="end" font-size="12">{valy:.1f}</text>\n')
 
         # Rotated Y-axis label: keep inside extra_left padding
-        y_label_x = plot_left - (extra_left - 10)  # 10px inset from left padding
+        y_label_x = plot_left - (extra_left - 5)  # 5px inset from left padding
         y_label_y = (plot_top + plot_bottom) / 2
         buf.write(
             f'  <text x="{y_label_x}" y="{y_label_y}" text-anchor="middle" font-size="16" '
@@ -10153,7 +10326,7 @@ class _Plot():
         buf.write('</svg>\n')
 
         # Also write HTML wrapper with save button
-        html_filename = filename.replace(".svg", ".html")
+        html_filename = filename
         html_content = f"""<!DOCTYPE html>
         <html>
         <head>
@@ -10241,12 +10414,12 @@ class _Plot():
             import webbrowser
             webbrowser.open(html_filename)
 
-    def line_plot(self,x_var, y_vars,title="Line Plot",x_label="Independent Variable", y_label="Dependent Variable",num_ticks=5,line_weight=2,line_colours=None,trendline=False,trend_colours=None,legend=False,line_labels=None,margin=60,filename="line_plot.svg",open_browser=False):
+    def line_plot(self,x_var, y_vars,title="Line Plot",x_label="Independent Variable", y_label="Dependent Variable",num_ticks=5,line_weight=2,line_colours=None,trendline=False,trend_colours=None,legend=False,line_labels=None,margin=60,filename="line_plot.html",open_browser=False):
         """Create a line plot for a single independent variable ('x_var') and one or more dependent variables ('y_vars')  and configure plot elements.
 
         Parameters:
 
-        x_var (list): the list of values representing the independent variable to be visualized. Values must be numerical (integer or floating point).
+        x_var (list): the list of values representing the independent variable to be visualized. Values may be numerical (integer or floating point) or categorical strings such as dates.
 
         y_vars (list): the list of values representing the dependent variable to be visualized, or a nested list if there are multiple dependent variables to be visualized. Values must be numerical (integer or floating point). Each series must match the length of x_var.
 
@@ -10272,13 +10445,19 @@ class _Plot():
         
         margin (integer): the margin size (in pixels) around the plot area.  
         
-        filename (string): the name of the output SVG file.  
+        filename (string): the name of the output file. Include the output file path in the string or prepend tt.get_out_dir() to the filename.
 
-        open_browser (Boolean): flag to indicate if the generated SVG file should be automatically opened in the default web browser."""
+        open_browser (Boolean): flag to indicate if the generated file should be automatically opened in the default web browser."""
         if not isinstance(x_var, list) or not x_var:
-            raise ValueError("'x_var' must be a non-empty list of numeric values.")
-        if not all(isinstance(v, (int, float)) for v in x_var):
-            raise ValueError("All values in 'x_var' must be numeric (int or float).")
+            raise ValueError("'x_var' must be a non-empty list of values.")
+        x_is_cat = False
+        if all(isinstance(v,str) for v in x_var):
+            cat_ticks = [x_var[i] for i in self._compute_categorical_ticks(len(x_var),num_ticks)]
+            x_var = [i for i in range(len(x_var))]
+            x_is_cat = True
+        else:
+            if not all(isinstance(v, (int, float)) for v in x_var):
+                raise ValueError("All values in 'x_var' must be numeric (int or float).")
         if not isinstance(y_vars, list):
             raise ValueError("'y_vars' must be a list of numeric values or a list of lists of numeric values.")
         is_flat = all(isinstance(v, (int, float)) for v in y_vars)
@@ -10337,9 +10516,22 @@ class _Plot():
             raise ValueError("'margin' must be a non-negative integer.")
         if not isinstance(filename, str):
             raise ValueError("'filename' must be a string.")
+        filename = self._normalize_html_filename(filename)
         if not isinstance(open_browser, bool):
             raise ValueError("'open_browser' must be a Boolean value.")
         
+        # sort values to ensure correct drawing
+        order = sorted(range(len(x_var)), key=lambda i: x_var[i])
+        x_var = [x_var[i] for i in order]
+        
+        if is_flat:
+            y_vars = [y_vars[i] for i in order]
+        else:
+            y_vars = [
+                [series[i] for i in order]
+                for series in y_vars
+            ]
+
         # Normalize y_vars to list of series
         if not isinstance(y_vars[0], (list, tuple)):
             series_list = [y_vars]
@@ -10432,8 +10624,12 @@ class _Plot():
             # X ticks
             xt = xmin + i*(xmax-xmin)/num_ticks
             x_pos = sx(xt)
+            if x_is_cat:
+                xt = cat_ticks[i]
+                buffer.write(f"<text x='{x_pos}' y='{plot_bottom+20}' text-anchor='middle'>{xt}</text>\n")
+            else:
+                buffer.write(f"<text x='{x_pos}' y='{plot_bottom+20}' text-anchor='middle'>{round(xt,2)}</text>\n")
             buffer.write(f"<line x1='{x_pos}' y1='{plot_bottom}' x2='{x_pos}' y2='{plot_bottom+5}' stroke='black'/>\n")
-            buffer.write(f"<text x='{x_pos}' y='{plot_bottom+20}' text-anchor='middle'>{round(xt,2)}</text>\n")
 
             # Y ticks
             yt = ymin + i*(ymax-ymin)/num_ticks
@@ -10542,7 +10738,7 @@ class _Plot():
         buffer.write("</svg>\n")
 
         # Also write HTML wrapper with save button
-        html_filename = filename.replace(".svg", ".html")
+        html_filename = filename
         html_content = f"""<!DOCTYPE html>
         <html>
         <head>
@@ -10631,7 +10827,7 @@ class _Plot():
     # DISTRIBUTION PLOTS
     # ============================================================
 
-    def histogram(self,variable,title="Histogram",x_label="Value",y_label="Frequency",num_bins=None,bar_colour=None,margin=60,filename="histogram.svg",open_browser=False):
+    def histogram(self,variable,title="Histogram",x_label="Value",y_label="Frequency",num_bins=None,bar_colour=None,margin=60,filename="histogram.html",open_browser=False):
         """Create a histogram for a single data series ('variable') and configure plot elements.
 
         Parameters:
@@ -10650,9 +10846,9 @@ class _Plot():
 
         margin (integer): the margin size (in pixels) around the plot area.
 
-        filename (string): the name of the output SVG file.
+        filename (string): the name of the output file. Include the output file path in the string or prepend tt.get_out_dir() to the filename.
 
-        open_browser (Boolean): flag to indicate if the generated HTML wrapper should be automatically opened in the default web browser."""
+        open_browser (Boolean): flag to indicate if the generated file should be automatically opened in the default web browser."""
         if not isinstance(variable, list) or not variable:
             raise ValueError("'variable' must be a non-empty list of numeric values.")
         if not all(isinstance(v, (int, float)) for v in variable):
@@ -10672,6 +10868,7 @@ class _Plot():
             raise ValueError("'margin' must be a non-negative integer.")
         if not isinstance(filename, str):
             raise ValueError("'filename' must be a string.")
+        filename = self._normalize_html_filename(filename)
         if not isinstance(open_browser, bool):
             raise ValueError("'open_browser' must be a Boolean value.")
         
@@ -10797,7 +10994,7 @@ class _Plot():
         buf.write("</svg>\n")
 
         # Also write HTML wrapper with save button
-        html_filename = filename.replace(".svg", ".html")
+        html_filename = filename
         html_content = f"""<!DOCTYPE html>
         <html>
         <head>
@@ -10882,7 +11079,7 @@ class _Plot():
             import webbrowser
             webbrowser.open(html_filename)
 
-    def box_plot(self,data,labels=None,title="Box Plot",x_label="Categories",y_label="Values",num_ticks=5,colour="#4e79a7",margin=60,filename="box_plot.svg",open_browser=False):
+    def box_plot(self,data,labels=None,title="Box Plot",x_label="Categories",y_label="Values",num_ticks=5,colour="#4e79a7",margin=60,filename="box_plot.html",open_browser=False):
         """Create a box plot from a list of data series ('data') and configure plot elements. One box will be created per series.
 
         Parameters:
@@ -10903,9 +11100,9 @@ class _Plot():
 
         margin (integer): the margin size (in pixels) around the plot area.
 
-        filename (string): the name of the output SVG file.
+        filename (string): the name of the output file. Include the output file path in the string or prepend tt.get_out_dir() to the filename.
 
-        open_browser (Boolean): flag to indicate if the generated HTML wrapper should be automatically opened in the default web browser."""
+        open_browser (Boolean): flag to indicate if the generated file should be automatically opened in the default web browser."""
         if not isinstance(data, list) or not data:
             raise ValueError("'data' must be a non-empty list of data series.")
         if not all(isinstance(series, list) and series for series in data):
@@ -10933,6 +11130,7 @@ class _Plot():
             raise ValueError("'margin' must be a non-negative integer.")
         if not isinstance(filename, str):
             raise ValueError("'filename' must be a string.")
+        filename = self._normalize_html_filename(filename)
         if not isinstance(open_browser, bool):
             raise ValueError("'open_browser' must be a Boolean value.")
 
@@ -11095,7 +11293,7 @@ class _Plot():
         buffer.write("</svg>\n")
 
         # Write HTML wrapper with save button
-        html_filename = filename.replace(".svg", ".html")
+        html_filename = filename
         html_content = f"""<!DOCTYPE html>
         <html>
         <head>
@@ -11180,7 +11378,7 @@ class _Plot():
             import webbrowser
             webbrowser.open(html_filename)
 
-    def grouped_box_plot(self,data,group_labels,category_labels,title="Grouped Box Plot",x_label="Groups",y_label="Values",num_ticks=5,colours=None,margin=60,filename="grouped_box_plot.svg",open_browser=False):
+    def grouped_box_plot(self,data,group_labels,category_labels,title="Grouped Box Plot",x_label="Groups",y_label="Values",num_ticks=5,colours=None,margin=60,filename="grouped_box_plot.html",open_browser=False):
         """Create a grouped box plot for multiple categories across groups and configure plot elements.
 
         Parameters:
@@ -11203,9 +11401,9 @@ class _Plot():
 
         margin (integer): the margin size (in pixels) around the plot area.
 
-        filename (string): the name of the output SVG file.
+        filename (string): the name of the output file. Include the output file path in the string or prepend tt.get_out_dir() to the filename.
 
-        open_browser (Boolean): flag to indicate if the generated HTML wrapper should be automatically opened in the default web browser."""
+        open_browser (Boolean): flag to indicate if the generated file should be automatically opened in the default web browser."""
         if not isinstance(data, list) or not data:
             raise ValueError("'data' must be a non-empty list of groups.")
         if not all(isinstance(group, list) and group for group in data):
@@ -11248,6 +11446,7 @@ class _Plot():
             raise ValueError("'margin' must be a non-negative integer.")
         if not isinstance(filename, str):
             raise ValueError("'filename' must be a string.")
+        filename = self._normalize_html_filename(filename)
         if not isinstance(open_browser, bool):
             raise ValueError("'open_browser' must be a Boolean value.")        
 
@@ -11452,7 +11651,7 @@ class _Plot():
         buffer.write("</svg>\n")
 
         # HTML wrapper with save button
-        html_filename = filename.replace(".svg", ".html")
+        html_filename = filename
         html_content = f"""<!DOCTYPE html>
         <html>
         <head>
@@ -11540,7 +11739,7 @@ class _Plot():
     # CATEGORICAL PLOTS
     # ============================================================
 
-    def bar_chart(self,variable,title="Bar Chart",x_label="Category",y_label="Count",num_ticks=6,colour="#4e79a7",margin=60,filename="bar_chart.svg",open_browser=False):
+    def bar_chart(self,variable,title="Bar Chart",x_label="Category",y_label="Count",num_ticks=6,colour="#4e79a7",margin=60,filename="bar_chart.html",open_browser=False):
         """Create a bar chart from a list of categorical values ('variable') and configure chart elements.
 
         Parameters:
@@ -11559,9 +11758,9 @@ class _Plot():
 
         margin (integer): the margin size (in pixels) around the plot area.
 
-        filename (string): the name of the output SVG file.
+        filename (string): the name of the output file. Include the output file path in the string or prepend tt.get_out_dir() to the filename.
 
-        open_browser (Boolean): flag to indicate if the generated HTML wrapper should be automatically opened in the default web browser."""
+        open_browser (Boolean): flag to indicate if the generated file should be automatically opened in the default web browser."""
         if not isinstance(variable, list) or not variable:
             raise ValueError("'variable' must be a non-empty list of categorical values.")
         if not isinstance(title, str):
@@ -11578,6 +11777,7 @@ class _Plot():
             raise ValueError("'margin' must be a non-negative integer.")
         if not isinstance(filename, str):
             raise ValueError("'filename' must be a string.")
+        filename = self._normalize_html_filename(filename)
         if not isinstance(open_browser, bool):
             raise ValueError("'open_browser' must be a Boolean value.")
 
@@ -11691,7 +11891,7 @@ class _Plot():
         buffer.write("</svg>\n")
 
         # Write HTML wrapper with save button
-        html_filename = filename.replace(".svg", ".html")
+        html_filename = filename
         html_content = f"""<!DOCTYPE html>
         <html>
         <head>
@@ -11776,7 +11976,7 @@ class _Plot():
             import webbrowser
             webbrowser.open(html_filename)
    
-    def grouped_bar_chart(self,variable,group_labels,category_labels=None,title="Grouped Bar Chart",x_label="Groups",y_label="Count",num_ticks=2,colours=None,margin=60,filename="grouped_bar_chart.svg",open_browser=False):
+    def grouped_bar_chart(self,variable,group_labels,category_labels=None,title="Grouped Bar Chart",x_label="Groups",y_label="Count",num_ticks=2,colours=None,margin=60,filename="grouped_bar_chart.html",open_browser=False):
         """Create a grouped bar chart for categorical or numerical input data and configure plot elements.
             
         Parameters:
@@ -11799,9 +11999,9 @@ class _Plot():
             
         margin (integer): the margin size (in pixels) around the plot area.
 
-        filename (string): the name of the output SVG file.
+        filename (string): the name of the output file. Include the output file path in the string or prepend tt.get_out_dir() to the filename.
 
-        open_browser (Boolean): flag to indicate if the generated HTML wrapper should be automatically opened in the default web browser."""
+        open_browser (Boolean): flag to indicate if the generated file should be automatically opened in the default web browser."""
         if not isinstance(variable, list) or not variable:
             raise ValueError("'variable' must be a non-empty list of groups.")
         if not all(isinstance(group, list) and group for group in variable):
@@ -11846,6 +12046,7 @@ class _Plot():
             raise ValueError("'margin' must be a non-negative integer.")
         if not isinstance(filename, str):
             raise ValueError("'filename' must be a string.")
+        filename = self._normalize_html_filename(filename)
         if not isinstance(open_browser, bool):
             raise ValueError("'open_browser' must be a Boolean value.")
 
@@ -12023,7 +12224,7 @@ class _Plot():
         buffer.write("</svg>\n")
 
         # HTML wrapper with save button
-        html_filename = filename.replace(".svg", ".html")
+        html_filename = filename
         html_content = f"""<!DOCTYPE html>
         <html>
         <head>
@@ -12107,7 +12308,7 @@ class _Plot():
             import webbrowser
             webbrowser.open(html_filename)
 
-    def pie_chart(self,variable,title="Pie Chart",show_values=False,colours=None,legend=True,margin=60,filename="pie_chart.svg",open_browser=False):
+    def pie_chart(self,variable,title="Pie Chart",show_values=False,colours=None,legend=True,margin=60,filename="pie_chart.html",open_browser=False):
         """Create a pie chart from a list of categorical values ('variable') and configure chart elements.
 
         Parameters:
@@ -12124,9 +12325,9 @@ class _Plot():
 
         margin (integer): the margin size (in pixels) around the plot area.
 
-        filename (string): the name of the output SVG file.
+        filename (string): the name of the output file. Include the output file path in the string or prepend tt.get_out_dir() to the filename.
 
-        open_browser (Boolean): flag to indicate if the generated HTML wrapper should be automatically opened in the default web browser."""
+        open_browser (Boolean): flag to indicate if the generated file should be automatically opened in the default web browser."""
         if not isinstance(variable, list) or not variable:
             raise ValueError("'variable' must be a non-empty list of categorical values.")
         if not isinstance(title, str):
@@ -12144,6 +12345,7 @@ class _Plot():
             raise ValueError("'margin' must be a non-negative integer.")
         if not isinstance(filename, str):
             raise ValueError("'filename' must be a string.")
+        filename = self._normalize_html_filename(filename)
         if not isinstance(open_browser, bool):
             raise ValueError("'open_browser' must be a Boolean value.")
         from collections import Counter
@@ -12261,7 +12463,7 @@ class _Plot():
         buffer.write("</svg>\n")
 
         # Also write HTML wrapper with save button
-        html_filename = filename.replace(".svg", ".html")
+        html_filename = filename
         html_content = f"""<!DOCTYPE html>
         <html>
         <head>
@@ -12350,7 +12552,7 @@ class _Plot():
     # SPATIAL PLOTS
     # ============================================================
 
-    def coordinate_plot(self, points, overlays = None, standard_dists = None, title="Coordinate Plot",x_label="X Coordinate",y_label="Y Coordinate",num_ticks=5,point_size=3,point_colours=None, overlay_colours = None, standard_dists_colours = None,legend=False,point_labels=None,overlay_labels = None,standard_dists_labels = None,tooltip_threshold=100,margin=60, filename="coordinate_plot.svg",open_browser=False):
+    def coordinate_plot(self, points, overlays = None, standard_dists = None, title="Coordinate Plot",x_label="X Coordinate",y_label="Y Coordinate",num_ticks=5,point_size=3,point_colours=None, overlay_colours = None, standard_dists_colours = None,legend=False,point_labels=None,overlay_labels = None,standard_dists_labels = None,tooltip_threshold=100,margin=60, filename="coordinate_plot.html",open_browser=False):
         """Create a coordinate plot for any number of PointDatasets ('points'), additional point overlays such as centroids ('overlays') and standard distances ("st) and configure plot elements.
 
         Parameters:
@@ -12389,9 +12591,9 @@ class _Plot():
         
         margin (integer): the margin size (in pixels) around the plot area. 
         
-        filename (string): the name of the output SVG file. Include the output file path in the string or prepend tt.get_out_dir() to the filename.
+        filename (string): the name of the output file. Include the output file path in the string or prepend tt.get_out_dir() to the filename.
 
-        open_browser (Boolean): flag to indicate if the generated SVG file should be automatically opened in the default web browser."""
+        open_browser (Boolean): flag to indicate if the generated file should be automatically opened in the default web browser."""
         # Validate points
         if not isinstance(points, (list, tuple)):
             points = [points]
@@ -12485,6 +12687,7 @@ class _Plot():
         # Validate filename + browser flag
         if not isinstance(filename, str):
             raise ValueError("'filename' must be a string.")
+        filename = self._normalize_html_filename(filename)
         if not isinstance(open_browser, bool):
             raise ValueError("'open_browser' must be a Boolean value.")
 
@@ -12970,8 +13173,7 @@ class _Plot():
 
         buf.write('</svg>\n')
 
-        html_filename = filename.replace(".svg", ".html")
-
+        html_filename = filename
         html_content = f"""<!DOCTYPE html>
         <html>
         <head>
@@ -17029,8 +17231,8 @@ class _Table():
                 if op(val, threshold):
                     _out.append_row(row[:])
 
-        _out.set_dtypes(self.get_dtypes())
         _out.set_headers(self.get_headers())
+        _out.set_dtypes(self.get_dtypes())
         return _out
 
     def filter_boolean(self, column, condition, target):
@@ -17345,8 +17547,26 @@ class _Table():
 
                     # Evaluate the column-function
                     try:
+                        import inspect
+
                         func = self._COLUMN_FUNCTIONS[func_name]["func"]
-                        result_list = func(*resolved_args, decimals)
+                        sig = inspect.signature(func)
+                        params = sig.parameters
+
+                        # Does the function explicitly accept a "decimals" parameter?
+                        accepts_decimals = "decimals" in params
+
+                        # Does the function accept **kwargs?
+                        accepts_kwargs = any(
+                            p.kind == inspect.Parameter.VAR_KEYWORD
+                            for p in params.values()
+                        )
+
+                        if accepts_decimals or accepts_kwargs:
+                            result_list = func(*resolved_args, decimals=decimals)
+                        else:
+                            result_list = func(*resolved_args)
+
                     except Exception as e:
                         raise ValueError(f"Error computing column-function '{func_name}': {e}")
 
@@ -18060,6 +18280,23 @@ class _Table():
                 output.append(stats.descriptive_stat(r,stat,decimals))
         return output
     
+    def get_date_range(self,column):
+        """Return a tuple of (start date, end date) from the specified column of dates.
+        
+        Parameters:
+        
+        column (integer, string): the index or header of the column the operation will be performed on."""
+        if not self.column_exists(column):
+            raise ValueError(f"Column '{column}' does not exist in the table.")
+        
+        # Resolve column index
+        if isinstance(column, str):
+            column = self._headers.index(column)
+
+        dates = self.get_column(column)
+
+        return min(dates),max(dates)
+
     def date_to_iso(self,column,formats,new_header=None):
         """Convert a specified column ('column') to ISO format (yyyy-mm-dd) and either append a new column or overwrite an existing column.
         
@@ -18666,12 +18903,12 @@ class _Table():
     # DIRECT PLOTTING
     # ============================================================
 
-    def scatter_plot(self,x_col, y_cols,title="Scatter Plot",x_label="Independent Variable",y_label="Dependent Variable",num_ticks=5,point_size=3,point_colour=None, point_style=None,trendline=False,trend_colour=None,legend=False,point_labels=None,tooltip_threshold=100,margin=60, filename="scatter_plot.svg",open_browser=False):
+    def scatter_plot(self,x_col, y_cols,title="Scatter Plot",x_label="Independent Variable",y_label="Dependent Variable",num_ticks=5,point_size=3,point_colour=None, point_style=None,trendline=False,trend_colour=None,legend=False,point_labels=None,tooltip_threshold=100,margin=60, filename="scatter_plot.html",open_browser=False):
         """Create a scatter plot for a single independent variable ('x_col') column and one or more dependent variables ('y_cols') and configure plot elements.
 
         Parameters:
 
-        x_col (integer, string): the index or header of the column representing the independent variable to be visualized. Values must be numerical (integer or floating point).
+        x_col (integer, string): the index or header of the column representing the independent variable to be visualized. Values may be numerical (integer or floating point) or categorical strings such as dates.
 
         y_cols (integer, string, list): the index or header of a single column representing the dependent variable to be visualized, or a list of columns indices or headers if there are multiple dependent variables to be visualized. Values must be numerical (integer or floating point).
 
@@ -18701,12 +18938,10 @@ class _Table():
         
         margin (integer): the margin size (in pixels) around the plot area. 
         
-        filename (string): the name of the output SVG file. Include the output file path in the string or prepend tt.get_out_dir() to the filename.
+        filename (string): the name of the output file. Include the output file path in the string or prepend tt.get_out_dir() to the filename.
 
-        open_browser (Boolean): flag to indicate if the generated SVG file should be automatically opened in the default web browser."""
+        open_browser (Boolean): flag to indicate if the generated file should be automatically opened in the default web browser."""
         x_col = self.get_column(x_col)
-        if not all(isinstance(v, (int, float)) for v in x_col):
-            raise ValueError("All values in 'x_var' must be numeric (int or float).")
         if isinstance(y_cols,(int,str)):
             y_cols = self.get_column(y_cols)
             if not all(isinstance(v, (int, float)) for v in y_cols):
@@ -18719,12 +18954,12 @@ class _Table():
         _Plot().scatter_plot(x_col,y_cols,title,x_label,y_label,num_ticks,point_size,point_colour,point_style,trendline,trend_colour,legend,point_labels,tooltip_threshold,margin,filename,open_browser)
         return self
 
-    def line_plot(self,x_col, y_cols,title="Line Plot",x_label="Independent Variable", y_label="Dependent Variable",num_ticks=5,line_weight=2,line_colours=None,trendline=False,trend_colours=None,legend=False,line_labels=None,margin=60,filename="line_plot.svg",open_browser=False):
+    def line_plot(self,x_col, y_cols,title="Line Plot",x_label="Independent Variable", y_label="Dependent Variable",num_ticks=5,line_weight=2,line_colours=None,trendline=False,trend_colours=None,legend=False,line_labels=None,margin=60,filename="line_plot.html",open_browser=False):
         """Create a line plot for a single independent variable ('x_col') column and one or more dependent variables ('y_col') and configure plot elements.
 
         Parameters:
 
-        x_col (integer, string): the index or header of the column representing the independent variable to be visualized. Values must be numerical (integer or floating point).
+        x_col (integer, string): the index or header of the column representing the independent variable to be visualized. Values may be numerical (integer or floating point) or categorical strings such as dates.
 
         y_cols (integer, string, list): the index or header of a single column representing the dependent variable to be visualized, or a list of columns indices or headers if there are multiple dependent variables to be visualized. Values must be numerical (integer or floating point).
 
@@ -18750,12 +18985,10 @@ class _Table():
         
         margin (integer): the margin size (in pixels) around the plot area.  
         
-        filename (string): the name of the output SVG file.  
+        filename (string): the name of the output file. Include the output file path in the string or prepend tt.get_out_dir() to the filename.
 
-        open_browser (Boolean): flag to indicate if the generated SVG file should be automatically opened in the default web browser."""
+        open_browser (Boolean): flag to indicate if the generated file should be automatically opened in the default web browser."""
         x_col = self.get_column(x_col)
-        if not all(isinstance(v, (int, float)) for v in x_col):
-            raise ValueError("All values in 'x_var' must be numeric (int or float).")
         if isinstance(y_cols,(int,str)):
             y_cols = self.get_column(y_cols)
             if not all(isinstance(v, (int, float)) for v in y_cols):
@@ -18768,7 +19001,7 @@ class _Table():
         _Plot().line_plot(x_col,y_cols,title,x_label,y_label,num_ticks,line_weight,line_colours,trendline,trend_colours,legend,line_labels,margin,filename,open_browser)
         return self
 
-    def histogram(self,column,title="Histogram",x_label="Value",y_label="Frequency",num_bins=None,bar_colour=None,margin=60,filename="histogram.svg",open_browser=False):
+    def histogram(self,column,title="Histogram",x_label="Value",y_label="Frequency",num_bins=None,bar_colour=None,margin=60,filename="histogram.html",open_browser=False):
         """Create a histogram for a single column and configure plot elements.
 
         Parameters:
@@ -18787,9 +19020,9 @@ class _Table():
 
         margin (integer): the margin size (in pixels) around the plot area.
 
-        filename (string): the name of the output SVG file.
+        filename (string): the name of the output file. Include the output file path in the string or prepend tt.get_out_dir() to the filename.
 
-        open_browser (Boolean): flag to indicate if the generated HTML wrapper should be automatically opened in the default web browser."""
+        open_browser (Boolean): flag to indicate if the generated file should be automatically opened in the default web browser."""
         column = self.get_column(column)
         if not all(isinstance(v, (int, float)) for v in column):
             raise ValueError("All values in 'column' must be numeric (int or float).")
@@ -18797,7 +19030,7 @@ class _Table():
         _Plot().histogram(column,title,x_label,y_label,num_bins,bar_colour,margin,filename,open_browser)
         return self
        
-    def box_plot(self,category_cols,labels=None,title="Box Plot",x_label="Categories",y_label="Values",num_ticks=5,colour="#4e79a7",margin=60,filename="box_plot.svg",open_browser=False):
+    def box_plot(self,category_cols,labels=None,title="Box Plot",x_label="Categories",y_label="Values",num_ticks=5,colour="#4e79a7",margin=60,filename="box_plot.html",open_browser=False):
         """Create a box plot from a list of columns ('category_cols') and configure plot elements. One box will be created per column.
 
         Parameters:
@@ -18818,9 +19051,9 @@ class _Table():
 
         margin (integer): the margin size (in pixels) around the plot area.
 
-        filename (string): the name of the output SVG file.
+        filename (string): the name of the output file. Include the output file path in the string or prepend tt.get_out_dir() to the filename.
 
-        open_browser (Boolean): flag to indicate if the generated HTML wrapper should be automatically opened in the default web browser."""
+        open_browser (Boolean): flag to indicate if the generated file should be automatically opened in the default web browser."""
         if isinstance(category_cols,(int,str)):
             category_cols = [category_cols]
         if isinstance(labels,str):
@@ -18830,7 +19063,7 @@ class _Table():
         _Plot().box_plot(columns,labels,title,x_label,y_label,num_ticks,colour,margin,filename,open_browser)
         return self
     
-    def bar_chart(self,column,title="Bar Chart",x_label="Category",y_label="Count",num_ticks=6,colour="#4e79a7",margin=60,filename="bar_chart.svg",open_browser=False):
+    def bar_chart(self,column,title="Bar Chart",x_label="Category",y_label="Count",num_ticks=6,colour="#4e79a7",margin=60,filename="bar_chart.html",open_browser=False):
         """Create a bar chart from a column of categorical values ('column') and configure chart elements.
 
         Parameters:
@@ -18849,14 +19082,14 @@ class _Table():
 
         margin (integer): the margin size (in pixels) around the plot area.
 
-        filename (string): the name of the output SVG file.
+        filename (string): the name of the output file. Include the output file path in the string or prepend tt.get_out_dir() to the filename.
 
-        open_browser (Boolean): flag to indicate if the generated HTML wrapper should be automatically opened in the default web browser."""
+        open_browser (Boolean): flag to indicate if the generated file should be automatically opened in the default web browser."""
         column = self.get_column(column)
         _Plot().bar_chart(column,title,x_label,y_label,num_ticks,colour,margin,filename,open_browser)
         return self
     
-    def pie_chart(self,column,title="Pie Chart",show_values=False,colours=None,legend=True,margin=60,filename="pie_chart.svg",open_browser=False):
+    def pie_chart(self,column,title="Pie Chart",show_values=False,colours=None,legend=True,margin=60,filename="pie_chart.html",open_browser=False):
         """Create a pie chart from a column of categorical values ('column') and configure chart elements.
 
         Parameters:
@@ -18873,9 +19106,9 @@ class _Table():
 
         margin (integer): the margin size (in pixels) around the plot area.
 
-        filename (string): the name of the output SVG file.
+        filename (string): the name of the output file. Include the output file path in the string or prepend tt.get_out_dir() to the filename.
 
-        open_browser (Boolean): flag to indicate if the generated HTML wrapper should be automatically opened in the default web browser."""
+        open_browser (Boolean): flag to indicate if the generated file should be automatically opened in the default web browser."""
         column = self.get_column(column)
         _Plot().pie_chart(column,title,show_values,colours,legend,margin,filename,open_browser)
         return self
@@ -19252,7 +19485,7 @@ class TableTools():
 
     def version(self):
         """Print the current version of TableTools."""
-        print(f"TableTools v1.0.2")
+        print(f"TableTools v1.0.3")
 
     def view_manual(self):
         """Open a web browser to view the TableTools manual."""
@@ -19698,18 +19931,21 @@ class TableTools():
                 output = f"Progress: {self._prog_count} of {self._prog_total} {percent}%"
 
             if timing is not None:
-
-                elapsed = self._format_time(perf_counter() - self._prog_start_time,decimals)
-                rate = self._format_time(self._prog_count / elapsed if elapsed > 0 else 0,decimals)
+                raw_elapsed = perf_counter() - self._prog_start_time
+                raw_rate = self._prog_count / raw_elapsed if raw_elapsed > 0 else 0
                 remaining = self._prog_total - self._prog_count
-                eta = self._format_time(remaining / rate if rate > 0 else None,decimals)
+                raw_eta = remaining / raw_rate if raw_rate > 0 else None
+
+                elapsed = self._format_time(raw_elapsed, decimals)
+                eta = self._format_time(raw_eta, decimals) if raw_eta is not None else None
+
                 timing_parts = []
                 if "elapsed" in timing:
-                    timing_parts.append(f"elapsed: {round(elapsed, 2)}s")
+                    timing_parts.append(f"elapsed: {elapsed}")
                 if "rate" in timing:
-                    timing_parts.append(f"{round(rate, 2)} it/s")
+                    timing_parts.append(f"{round(raw_rate, decimals)} it/s")
                 if "eta" in timing:
-                    timing_parts.append(f"eta: {round(eta, 2)}s" if eta is not None else "eta: --")
+                    timing_parts.append(f"eta: {eta}" if eta is not None else "eta: --")
                 output = output + " | " + " | ".join(timing_parts)
 
             print(output)
@@ -19775,17 +20011,21 @@ class TableTools():
                 output = f"{update_bar} {self._prog_count} of {self._prog_total} {percent}%"
 
             if timing is not None:
-                elapsed = self._format_time(perf_counter() - self._prog_start_time,decimals)
-                rate = self._format_time(self._prog_count / elapsed if elapsed > 0 else 0,decimals)
+                raw_elapsed = perf_counter() - self._prog_start_time
+                raw_rate = self._prog_count / raw_elapsed if raw_elapsed > 0 else 0
                 remaining = self._prog_total - self._prog_count
-                eta = self._format_time(remaining / rate if rate > 0 else None,decimals)
+                raw_eta = remaining / raw_rate if raw_rate > 0 else None
+
+                elapsed = self._format_time(raw_elapsed, decimals)
+                eta = self._format_time(raw_eta, decimals) if raw_eta is not None else None
+
                 timing_parts = []
                 if "elapsed" in timing:
-                    timing_parts.append(f"elapsed: {round(elapsed, 2)}s")
+                    timing_parts.append(f"elapsed: {elapsed}")
                 if "rate" in timing:
-                    timing_parts.append(f"{round(rate, 2)} it/s")
+                    timing_parts.append(f"{round(raw_rate, decimals)} it/s")
                 if "eta" in timing:
-                    timing_parts.append(f"eta: {round(eta, 2)}s" if eta is not None else "eta: --")
+                    timing_parts.append(f"eta: {eta}" if eta is not None else "eta: --")
                 output = output + " | " + " | ".join(timing_parts)
 
             print(output, end="\r")
@@ -20051,7 +20291,7 @@ class TableTools():
             t.autogenerate_headers()
         
         # determine data types
-        # t.detect_dtypes()
+        t.detect_dtypes()
 
         return t
 
@@ -22200,4 +22440,3 @@ class TableTools():
 
                 # EOF marker
                 f.write(b"\x1A")
-

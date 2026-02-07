@@ -153,7 +153,7 @@ All modifications are performed through Table methods.
 A full manual is included in:
 
 ```
-TableTools/Docs/TableTools_manual.html
+TableTools/Docs/TableToolsManual.html
 ```
 
 You can also open it programmatically:
