@@ -103,7 +103,7 @@ The top‑level API for:
 **Example:**
 
 ```python
-from TableTools.Table_Tools import TableTools
+from TableTools import TableTools
 tt = TableTools()
 ```
 

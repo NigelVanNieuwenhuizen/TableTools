@@ -18413,7 +18413,7 @@ class _Table():
         end_dt = datetime.datetime.strptime(end, "%Y-%m-%d") + datetime.timedelta(days=1)
         end_plus = end_dt.strftime("%Y-%m-%d")
 
-        full_range = self.generate_day_range(start, end_plus)
+        full_range = _Date().generate_day_range(start, end_plus)
 
         return len(full_range) == len(sorted_dates)
 
@@ -19485,7 +19485,7 @@ class TableTools():
 
     def version(self):
         """Print the current version of TableTools."""
-        print(f"TableTools v1.0.3")
+        print(f"TableTools v1.0.4")
 
     def view_manual(self):
         """Open a web browser to view the TableTools manual."""

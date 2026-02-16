@@ -60,7 +60,7 @@
 
             <div class="main-content">
                 <h1 id="top">TableTools Manual</h1>
-                <p class="updated-timestamp">Last Updated: 2026-02-07 18:18:39</p>
+                <p class="updated-timestamp">Last Updated: 2026-02-16 16:37:15</p>
 
                 <div class="section intro-text">
                     
@@ -99,7 +99,7 @@
         It provides a unified interface for reading and writing data, managing directories, 
         coordinating workflows, and accessing the library’s toolbox ecosystem.</p>
 
-        <pre><code>from TableTools.Table_Tools import TableTools
+        <pre><code>from TableTools import TableTools
 
 # initialize a TableTools object to access library functionality
 tt = TableTools()</code></pre>
@@ -683,7 +683,7 @@ value  = table[row_index, column_index]</code></pre>
     <p><b>Example Usage:</b></p>
     <pre><code>
 tt = TableTools()
-# Example assumes PLUS_MINUS is one of the symbols defined in Table_Tools.py
+# Example assumes PLUS_MINUS is one of the symbols defined in TableTools.py
 print(f"The mean $\pm$ one standard deviation: {tt.symbols.PLUS_MINUS}")
 # Output: The mean ± one standard deviation: ±
     </code></pre>
@@ -1608,7 +1608,7 @@ print(f"The mean $\pm$ one standard deviation: {tt.symbols.PLUS_MINUS}")
     <span class="comment"># ------------------------------------------------------------</span>
 
     <span class="comment"># Import the TableTools class from the TableTools package</span>
-    from TableTools.Table_Tools import TableTools
+    from TableTools import TableTools
 
     <span class="comment"># Instantiate the TableTools object</span>
     tt = TableTools()
@@ -1724,7 +1724,7 @@ This example demonstrates a selection of core operations available on the Table 
 <span class="comment"># ------------------------------------------------------------</span>
 
 <span class="comment"># Import the TableTools class</span>
-from TableTools.Table_Tools import TableTools
+from TableTools import TableTools
 
 <span class="comment"># Instantiate TableTools</span>
 tt = TableTools()
@@ -1890,7 +1890,7 @@ This example demonstrates how TableTools supports point‑based spatial analysis
 <span class="comment"># ------------------------------------------------------------</span>
 
 <span class="comment"># Import the TableTools class</span>
-from TableTools.Table_Tools import TableTools
+from TableTools import TableTools
 
 <span class="comment"># Instantiate TableTools</span>
 tt = TableTools()
@@ -2045,7 +2045,7 @@ This example demonstrates how to create figures using the TableTools plotting to
     <span class="comment"># ------------------------------------------------------------</span>
 
     <span class="comment"># Import TableTools</span>
-    from TableTools.Table_Tools import TableTools
+    from TableTools import TableTools
 
     <span class="comment"># Instantiate TableTools</span>
     tt = TableTools()
@@ -2117,7 +2117,7 @@ This final example demonstrates how to write processed data to disk using the Ta
 <span class="comment"># ------------------------------------------------------------</span>
 
 <span class="comment"># Import TableTools</span>
-from TableTools.Table_Tools import TableTools
+from TableTools import TableTools
 
 <span class="comment"># Instantiate TableTools</span>
 tt = TableTools()
