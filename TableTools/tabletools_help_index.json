@@ -163,16 +163,16 @@
     "peek_raw_text": {
         "name": "peek_raw_text",
         "category": "TableTools",
-        "signature": "(self, text_file, extension='.txt', num_lines=5, return_lines=False)",
-        "doc": "Attempt to read a raw text file ('text_file') and print or return the specified number of lines ('num_lines'). No data type conversion is performed and data is not returned in a Table object. This function streams the file line by line and stops after 'num_lines', so very large files can be inspected safely without loading the entire file into memory.\n\nParameters:\n\ntext_file (string): the name of the text file to be read, including the \".txt\" extension.\n\nextension (string): the extension of the file to be read.\n\nnum_lines (integer): the number of lines to be printed or returned.\n\nreturn_lines (Boolean): flag to indicate if num_lines will be printed to the terminal (False) or returned as a list (True).",
-        "example": "result = tt.peek_raw_text(text_file, extension='.txt', num_lines=5, return_lines=False)"
+        "signature": "(self, text_file, extension='.txt', num_lines=5, return_lines=False, encoding='utf-8')",
+        "doc": "Attempt to read a raw text file ('text_file') and print or return the specified number of lines ('num_lines'). No data type conversion is performed and data is not returned in a Table object. This function streams the file line by line and stops after 'num_lines', so very large files can be inspected safely without loading the entire file into memory.\n\nParameters:\n\ntext_file (string): the name of the text file to be read, including the \".txt\" extension.\n\nextension (string): the extension of the file to be read.\n\nnum_lines (integer): the number of lines to be printed or returned.\n\nreturn_lines (Boolean): flag to indicate if num_lines will be printed to the terminal (False) or returned as a list (True).\n\nencoding (string): the text encoding to use when reading the file.",
+        "example": "result = tt.peek_raw_text(text_file, extension='.txt', num_lines=5, return_lines=False, encoding='utf-8')"
     },
     "read_csv": {
         "name": "read_csv",
         "category": "TableTools",
-        "signature": "(self, csv_file, skiprows=0, headers=True)",
-        "doc": "Attempt to read a delimited CSV file ('csv_file') and store the data in a new Table object.\n\nParameters:\n\ncsv_file (string): the name of the CSV file to be read, including the \".csv\" extension.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.\n\nheaders (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.",
-        "example": "result = tt.read_csv(csv_file, skiprows=0, headers=True)"
+        "signature": "(self, csv_file, skiprows=0, headers=True, encoding='utf-8')",
+        "doc": "Attempt to read a delimited CSV file ('csv_file') and store the data in a new Table object.\n\nParameters:\n\ncsv_file (string): the name of the CSV file to be read, including the \".csv\" extension.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.\n\nheaders (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.\n\nencoding (string): the text encoding to use when reading the file.",
+        "example": "result = tt.read_csv(csv_file, skiprows=0, headers=True, encoding='utf-8')"
     },
     "read_dbf": {
         "name": "read_dbf",
@@ -184,72 +184,72 @@
     "read_fixedwidth": {
         "name": "read_fixedwidth",
         "category": "TableTools",
-        "signature": "(self, fw_file, extension='.txt', widths=None, skiprows=0, headers=True, overflow=None)",
-        "doc": "Attempt to read a fixed-width text file ('txt_file') and store the data in a new Table object.\n\nParameters:\n\nfw_file (string): the name of the fixed-width file to be read, including the extension.\n\nextension (string): the extension of the file to be read.\n\nwidths (list): a list of character widths of each column. If None, column boundaries will be auto-detected based on whitespace patterns.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.\n\nheaders (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.\n\noverflow (string): how column overflow should be managed if a column value exceeds its specified width. If None, columns are silently truncationed. If \"auto-expand\", columns are expanded as need to fit values. If \"strict\", an error is raised.",
-        "example": "result = tt.read_fixedwidth(fw_file, extension='.txt', widths=None, skiprows=0, headers=True, overflow=None)"
+        "signature": "(self, fw_file, extension='.txt', widths=None, skiprows=0, headers=True, overflow=None, encoding='utf-8')",
+        "doc": "Attempt to read a fixed-width text file ('txt_file') and store the data in a new Table object.\n\nParameters:\n\nfw_file (string): the name of the fixed-width file to be read, including the extension.\n\nextension (string): the extension of the file to be read.\n\nwidths (list): a list of character widths of each column. If None, column boundaries will be auto-detected based on whitespace patterns.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.\n\nheaders (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.\n\noverflow (string): how column overflow should be managed if a column value exceeds its specified width. If None, columns are silently truncationed. If \"auto-expand\", columns are expanded as need to fit values. If \"strict\", an error is raised.\n\nencoding (string): the text encoding to use when reading the file.",
+        "example": "result = tt.read_fixedwidth(fw_file, extension='.txt', widths=None, skiprows=0, headers=True, overflow=None, encoding='utf-8')"
     },
     "read_html": {
         "name": "read_html",
         "category": "TableTools",
-        "signature": "(self, html_file, headers=True, table_index=0)",
-        "doc": "Attempt to read a table in an HTML document ('html_file') and store the data in a new Table object.\n\nParameters:\n\nhtml_file (string): the name of the HTML file to be read, including the \".html\" extension.\n\nheaders (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.\n\ntable_index (integer): which table to read. In an HTML document with one table, index must be 0 (first table). In a document with multiple tables, other index values may be used to read other tables.",
-        "example": "result = tt.read_html(html_file, headers=True, table_index=0)"
+        "signature": "(self, html_file, headers=True, table_index=0, encoding='utf-8')",
+        "doc": "Attempt to read a table in an HTML document ('html_file') and store the data in a new Table object.\n\nParameters:\n\nhtml_file (string): the name of the HTML file to be read, including the \".html\" extension.\n\nheaders (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.\n\ntable_index (integer): which table to read. In an HTML document with one table, index must be 0 (first table). In a document with multiple tables, other index values may be used to read other tables.\n\nencoding (string): the text encoding to use when reading the file.",
+        "example": "result = tt.read_html(html_file, headers=True, table_index=0, encoding='utf-8')"
     },
     "read_ini": {
         "name": "read_ini",
         "category": "TableTools",
-        "signature": "(self, ini_file, headers=True, skiprows=0)",
-        "doc": "Attempt to read an INI-style configuration file ('ini_file') and store the data in a new Table object. Each section becomes a row, and keys within sections become columns. Missing keys are filled with None.\n\nParameters:\n\nini_file (string): the name of the INI file to be read. If no file extension is provided, '.ini' will be appended automatically.\n\nheaders (Boolean): flag to indicate if the keys should be used as column headers. If False, generic headers will be automatically generated.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.",
-        "example": "result = tt.read_ini(ini_file, headers=True, skiprows=0)"
+        "signature": "(self, ini_file, headers=True, skiprows=0, encoding='utf-8')",
+        "doc": "Attempt to read an INI-style configuration file ('ini_file') and store the data in a new Table object. Each section becomes a row, and keys within sections become columns. Missing keys are filled with None.\n\nParameters:\n\nini_file (string): the name of the INI file to be read. If no file extension is provided, '.ini' will be appended automatically.\n\nheaders (Boolean): flag to indicate if the keys should be used as column headers. If False, generic headers will be automatically generated.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.\n\nencoding (string): the text encoding to use when reading the file.",
+        "example": "result = tt.read_ini(ini_file, headers=True, skiprows=0, encoding='utf-8')"
     },
     "read_json": {
         "name": "read_json",
         "category": "TableTools",
-        "signature": "(self, json_file)",
-        "doc": "Attempt to read a JSON file ('json_file') and store the data in a new Table object. It is expected that the JSON file has a single object. The object's keys will be used as column headers, and the object's values should be equal-length arrays representing the column data.\n\nParameters:\n\njson_file (string): the name of the JSON file to be read, including the \".json\" extension.",
-        "example": "result = tt.read_json(json_file)"
+        "signature": "(self, json_file, encoding='utf-8')",
+        "doc": "Attempt to read a JSON file ('json_file') and store the data in a new Table object. It is expected that the JSON file has a single object. The object's keys will be used as column headers, and the object's values should be equal-length arrays representing the column data.\n\nParameters:\n\njson_file (string): the name of the JSON file to be read, including the \".json\" extension.\n\nencoding (string): the text encoding to use when reading the file.",
+        "example": "result = tt.read_json(json_file, encoding='utf-8')"
     },
     "read_latex": {
         "name": "read_latex",
         "category": "TableTools",
-        "signature": "(self, tex_file, headers=True, skiprows=0, table_index=0)",
-        "doc": "Attempt to read a table in a LaTeX document ('tex_file') and store the data in a new Table object.\n\nParameters:\n\ntex_file (string): the name of the LaTeX file to be read, including the \".tex\" extension.\n\nheaders (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.\n\ntable_index (integer): which table to read. LaTeX documents may contain multiple tables. Index 0 refers to the first table found.",
-        "example": "result = tt.read_latex(tex_file, headers=True, skiprows=0, table_index=0)"
+        "signature": "(self, tex_file, headers=True, skiprows=0, table_index=0, encoding='utf-8')",
+        "doc": "Attempt to read a table in a LaTeX document ('tex_file') and store the data in a new Table object.\n\nParameters:\n\ntex_file (string): the name of the LaTeX file to be read, including the \".tex\" extension.\n\nheaders (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.\n\ntable_index (integer): which table to read. LaTeX documents may contain multiple tables. Index 0 refers to the first table found.\n\nencoding (string): the text encoding to use when reading the file.",
+        "example": "result = tt.read_latex(tex_file, headers=True, skiprows=0, table_index=0, encoding='utf-8')"
     },
     "read_markdown": {
         "name": "read_markdown",
         "category": "TableTools",
-        "signature": "(self, md_file, headers=True, skiprows=0, table_index=0)",
-        "doc": "Attempt to read a table in a Markdown document ('md_file') and store the data in a new Table object.\n\nParameters:\n\nmd_file (string): the name of the Markdown file to be read, including the \".md\" extension.\n\nheaders (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.\n\ntable_index (integer): which table to read. Markdown documents may contain multiple tables. Index 0 refers to the first table found.",
-        "example": "result = tt.read_markdown(md_file, headers=True, skiprows=0, table_index=0)"
+        "signature": "(self, md_file, headers=True, skiprows=0, table_index=0, encoding='utf-8')",
+        "doc": "Attempt to read a table in a Markdown document ('md_file') and store the data in a new Table object.\n\nParameters:\n\nmd_file (string): the name of the Markdown file to be read, including the \".md\" extension.\n\nheaders (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.\n\ntable_index (integer): which table to read. Markdown documents may contain multiple tables. Index 0 refers to the first table found.\n\nencoding (string): the text encoding to use when reading the file.",
+        "example": "result = tt.read_markdown(md_file, headers=True, skiprows=0, table_index=0, encoding='utf-8')"
     },
     "read_other_text": {
         "name": "read_other_text",
         "category": "TableTools",
-        "signature": "(self, text_file, extension, delimiter=',', skiprows=0, headers=True)",
-        "doc": "Attempt to read a delimited text file ('text_file') with an extension other than \".txt\" and store the data in a new Table object.\n\nParameters:\n\ntext_file (string): the name of the text file to be read.\n\nextension (string): the extension of the file to be read.\n\ndelimiter (string): the character that separates values in the text file. A comma is the default delimiter.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.\n\nheaders (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.",
-        "example": "result = tt.read_other_text(text_file, extension, delimiter=',', skiprows=0, headers=True)"
+        "signature": "(self, text_file, extension, delimiter=',', skiprows=0, headers=True, encoding='utf-8')",
+        "doc": "Attempt to read a delimited text file ('text_file') with an extension other than \".txt\" and store the data in a new Table object.\n\nParameters:\n\ntext_file (string): the name of the text file to be read.\n\nextension (string): the extension of the file to be read.\n\ndelimiter (string): the character that separates values in the text file. A comma is the default delimiter.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.\n\nheaders (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.\n\nencoding (string): the text encoding to use when reading the file.",
+        "example": "result = tt.read_other_text(text_file, extension, delimiter=',', skiprows=0, headers=True, encoding='utf-8')"
     },
     "read_psv": {
         "name": "read_psv",
         "category": "TableTools",
-        "signature": "(self, psv_file, skiprows=0, headers=True)",
-        "doc": "Attempt to read a pipe-separated values file ('psv_file') and store the data in a new Table object.\n\nParameters:\n\npsv_file (string): the name of the PSV file to be read, including the \".psv\" extension.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.\n\nheaders (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.",
-        "example": "result = tt.read_psv(psv_file, skiprows=0, headers=True)"
+        "signature": "(self, psv_file, skiprows=0, headers=True, encoding='utf-8')",
+        "doc": "Attempt to read a pipe-separated values file ('psv_file') and store the data in a new Table object.\n\nParameters:\n\npsv_file (string): the name of the PSV file to be read, including the \".psv\" extension.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.\n\nheaders (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.\n\nencoding (string): the text encoding to use when reading the file.",
+        "example": "result = tt.read_psv(psv_file, skiprows=0, headers=True, encoding='utf-8')"
     },
     "read_r_dput": {
         "name": "read_r_dput",
         "category": "TableTools",
-        "signature": "(self, r_file, headers=True, skiprows=0)",
+        "signature": "(self, r_file, headers=True, skiprows=0, encoding='utf-8')",
         "doc": "Attempt to read an R dput() representation of a data frame ('r_file') and store the data in a new Table object.\n\nThe R object must be of the form:\n    structure(list(\n        col1 = c(...),\n        col2 = c(...),\n        ...\n    ))\n\nParameters:\n\nr_file (string): the name of the R dput file to be read. If no file extension is provided, '.r' will be appended automatically.\n\nheaders (Boolean): flag to indicate if the column names should be used as headers. If False, generic headers will be automatically generated.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.",
-        "example": "result = tt.read_r_dput(r_file, headers=True, skiprows=0)"
+        "example": "result = tt.read_r_dput(r_file, headers=True, skiprows=0, encoding='utf-8')"
     },
     "read_raw_text": {
         "name": "read_raw_text",
         "category": "TableTools",
-        "signature": "(self, text_file, extension='.txt')",
-        "doc": "Attempt to read a raw text file ('text_file') and return the contents as a nested list. No data type conversion is performed and data is not returned in a Table object.\n\nParameters:\n\ntext_file (string): the name of the text file to be read, including the \".txt\" extension.\n\nextension (string): the extension of the file to be read.",
-        "example": "result = tt.read_raw_text(text_file, extension='.txt')"
+        "signature": "(self, text_file, extension='.txt', encoding='utf-8')",
+        "doc": "Attempt to read a raw text file ('text_file') and return the contents as a nested list. No data type conversion is performed and data is not returned in a Table object.\n\nParameters:\n\ntext_file (string): the name of the text file to be read, including the \".txt\" extension.\n\nextension (string): the extension of the file to be read.\n\nencoding (string): the text encoding to use when reading the file.",
+        "example": "result = tt.read_raw_text(text_file, extension='.txt', encoding='utf-8')"
     },
     "read_sql": {
         "name": "read_sql",
@@ -261,16 +261,16 @@
     "read_text": {
         "name": "read_text",
         "category": "TableTools",
-        "signature": "(self, text_file, delimiter=',', skiprows=0, headers=True)",
-        "doc": "Attempt to read a delimited text file ('text_file') with a \".txt\" extension and store the data in a new Table object.\n\nParameters:\n\ntext_file (string): the name of the text file to be read, including the \".txt\" extension.\n\ndelimiter (string): the character that separates values in the text file. A comma is the default delimiter.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.\n\nheaders (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.",
-        "example": "result = tt.read_text(text_file, delimiter=',', skiprows=0, headers=True)"
+        "signature": "(self, text_file, delimiter=',', skiprows=0, headers=True, encoding='utf-8')",
+        "doc": "Attempt to read a delimited text file ('text_file') with a \".txt\" extension and store the data in a new Table object.\n\nParameters:\n\ntext_file (string): the name of the text file to be read, including the \".txt\" extension.\n\ndelimiter (string): the character that separates values in the text file. A comma is the default delimiter.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.\n\nheaders (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.\n\nencoding (string): the text encoding to use when reading the file.",
+        "example": "result = tt.read_text(text_file, delimiter=',', skiprows=0, headers=True, encoding='utf-8')"
     },
     "read_tsv": {
         "name": "read_tsv",
         "category": "TableTools",
-        "signature": "(self, tsv_file, skiprows=0, headers=True)",
-        "doc": "Attempt to read a tab-separated values file ('tsv_file') and store the data in a new Table object.\n\nParameters:\n\ntsv_file (string): the name of the TSV file to be read, including the \".tsv\" extension.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.\n\nheaders (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.",
-        "example": "result = tt.read_tsv(tsv_file, skiprows=0, headers=True)"
+        "signature": "(self, tsv_file, skiprows=0, headers=True, encoding='utf-8')",
+        "doc": "Attempt to read a tab-separated values file ('tsv_file') and store the data in a new Table object.\n\nParameters:\n\ntsv_file (string): the name of the TSV file to be read, including the \".tsv\" extension.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.\n\nheaders (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.\n\nencoding (string): the text encoding to use when reading the file.",
+        "example": "result = tt.read_tsv(tsv_file, skiprows=0, headers=True, encoding='utf-8')"
     },
     "read_xlsx": {
         "name": "read_xlsx",
@@ -282,16 +282,16 @@
     "read_xml": {
         "name": "read_xml",
         "category": "TableTools",
-        "signature": "(self, xml_file, headers=True, skiprows=0, table_index=0)",
-        "doc": "Attempt to read a table in an XML document ('xml_file') and store the data in a new Table object.\n\nParameters:\n\nxml_file (string): the name of the XML file to be read, including the \".xml\" extension.\n\nheaders (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.\n\ntable_index (integer): which table to read. XML documents may contain multiple <table> elements. Index 0 refers to the first table found.",
-        "example": "result = tt.read_xml(xml_file, headers=True, skiprows=0, table_index=0)"
+        "signature": "(self, xml_file, headers=True, skiprows=0, table_index=0, encoding='utf-8')",
+        "doc": "Attempt to read a table in an XML document ('xml_file') and store the data in a new Table object.\n\nParameters:\n\nxml_file (string): the name of the XML file to be read, including the \".xml\" extension.\n\nheaders (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.\n\nskiprows (integer): the number of rows to skip at the start of the file, if necessary.\n\ntable_index (integer): which table to read. XML documents may contain multiple <table> elements. Index 0 refers to the first table found.\n\nencoding (string): the text encoding to use when reading the file.",
+        "example": "result = tt.read_xml(xml_file, headers=True, skiprows=0, table_index=0, encoding='utf-8')"
     },
     "read_yaml": {
         "name": "read_yaml",
         "category": "TableTools",
-        "signature": "(self, yaml_file)",
-        "doc": "Attempt to read a YAML document ('yaml_file') containing a list of dictionaries and store the data in a new Table object.\n\nThe YAML file must contain a top-level list, where each element is a dictionary representing a row. Dictionary keys become column headers.\n\nParameters:\n\nyaml_file (string): the name of the YAML file to be read, including the \".yaml\" or \".yml\" extension.",
-        "example": "result = tt.read_yaml(yaml_file)"
+        "signature": "(self, yaml_file, encoding='utf-8')",
+        "doc": "Attempt to read a YAML document ('yaml_file') containing a list of dictionaries and store the data in a new Table object.\n\nThe YAML file must contain a top-level list, where each element is a dictionary representing a row. Dictionary keys become column headers.\n\nParameters:\n\nyaml_file (string): the name of the YAML file to be read, including the \".yaml\" or \".yml\" extension.\n\nencoding (string): the text encoding to use when reading the file.",
+        "example": "result = tt.read_yaml(yaml_file, encoding='utf-8')"
     },
     "return_processing_time": {
         "name": "return_processing_time",
@@ -366,9 +366,9 @@
     "write_csv": {
         "name": "write_csv",
         "category": "TableTools",
-        "signature": "(self, table, filename)",
-        "doc": "Attempt to write the data stored in a Table object to a CSV file ('filename') with a \".csv\" extension.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.",
-        "example": "tt.write_csv(table, filename)"
+        "signature": "(self, table, filename, encoding='utf-8')",
+        "doc": "Attempt to write the data stored in a Table object to a CSV file ('filename') with a \".csv\" extension.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.\n\nencoding (string): the text encoding to use when writing the file.",
+        "example": "tt.write_csv(table, filename, encoding='utf-8')"
     },
     "write_dbf": {
         "name": "write_dbf",
@@ -380,65 +380,65 @@
     "write_fixedwidth": {
         "name": "write_fixedwidth",
         "category": "TableTools",
-        "signature": "(self, table, filename, extension='.txt', widths=None, overflow=None)",
-        "doc": "Attempt to write the data stored in a Table object to a fixed-width text file ('filename') with a \".txt\" extension.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.\n\nextension (string): the extension of the file to be read.\n\nwidths (list): a list of character widths of each column. If None, widths will be auto-detected from the data.\n\noverflow (string): how column overflow should be managed if a value exceeds its specified width. If None, values are silently truncated. If \"auto-expand\", columns are expanded as needed to fit values. If \"strict\", an error is raised.",
-        "example": "tt.write_fixedwidth(table, filename, extension='.txt', widths=None, overflow=None)"
+        "signature": "(self, table, filename, extension='.txt', widths=None, overflow=None, encoding='utf-8')",
+        "doc": "Attempt to write the data stored in a Table object to a fixed-width text file ('filename') with a \".txt\" extension.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.\n\nextension (string): the extension of the file to be read.\n\nwidths (list): a list of character widths of each column. If None, widths will be auto-detected from the data.\n\noverflow (string): how column overflow should be managed if a value exceeds its specified width. If None, values are silently truncated. If \"auto-expand\", columns are expanded as needed to fit values. If \"strict\", an error is raised.\n\nencoding (string): the text encoding to use when writing the file.",
+        "example": "tt.write_fixedwidth(table, filename, extension='.txt', widths=None, overflow=None, encoding='utf-8')"
     },
     "write_html": {
         "name": "write_html",
         "category": "TableTools",
-        "signature": "(self, table, filename, style='standard')",
-        "doc": "Attempt to write the data stored in a Table object to a table in an HTML file ('filename') with the \".html\" extension.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.\n\nstyle (string): the style of the output table. The style may be specified as \"standard\" to enclose all cells in horizontal and vertical borders, or \"scientific\" to remove vertical borders from cells.",
-        "example": "tt.write_html(table, filename, style='standard')"
+        "signature": "(self, table, filename, style='standard', encoding='utf-8')",
+        "doc": "Attempt to write the data stored in a Table object to a table in an HTML file ('filename') with the \".html\" extension.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.\n\nstyle (string): the style of the output table. The style may be specified as \"standard\" to enclose all cells in horizontal and vertical borders, or \"scientific\" to remove vertical borders from cells.\n\nencoding (string): the text encoding to use when writing the file.",
+        "example": "tt.write_html(table, filename, style='standard', encoding='utf-8')"
     },
     "write_ini": {
         "name": "write_ini",
         "category": "TableTools",
-        "signature": "(self, table, filename)",
-        "doc": "Attempt to write the data stored in a Table object to an INI-style configuration file ('filename') with a \".ini\" extension. Each row in the Table becomes a section, and each column becomes a key-value pair within that section.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.",
-        "example": "tt.write_ini(table, filename)"
+        "signature": "(self, table, filename, encoding='utf-8')",
+        "doc": "Attempt to write the data stored in a Table object to an INI-style configuration file ('filename') with a \".ini\" extension. Each row in the Table becomes a section, and each column becomes a key-value pair within that section.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.\n\nencoding (string): the text encoding to use when writing the file.",
+        "example": "tt.write_ini(table, filename, encoding='utf-8')"
     },
     "write_json": {
         "name": "write_json",
         "category": "TableTools",
-        "signature": "(self, table, filename)",
-        "doc": "Attempt to write the data stored in a Table object to a JSON file ('filename') with a \".json\" extension. This JSON file will have a single object. The object's keys will be the Table column headers, and the object's values will be arrays of column values.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.",
-        "example": "tt.write_json(table, filename)"
+        "signature": "(self, table, filename, encoding='utf-8')",
+        "doc": "Attempt to write the data stored in a Table object to a JSON file ('filename') with a \".json\" extension. This JSON file will have a single object. The object's keys will be the Table column headers, and the object's values will be arrays of column values.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.\n\nencoding (string): the text encoding to use when writing the file.",
+        "example": "tt.write_json(table, filename, encoding='utf-8')"
     },
     "write_latex": {
         "name": "write_latex",
         "category": "TableTools",
-        "signature": "(self, table, filename)",
-        "doc": "Attempt to write the data stored in a Table object to a LaTeX file ('filename') with a \".tex\" extension.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.",
-        "example": "tt.write_latex(table, filename)"
+        "signature": "(self, table, filename, encoding='utf-8')",
+        "doc": "Attempt to write the data stored in a Table object to a LaTeX file ('filename') with a \".tex\" extension.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.\n\nencoding (string): the text encoding to use when writing the file.",
+        "example": "tt.write_latex(table, filename, encoding='utf-8')"
     },
     "write_markdown": {
         "name": "write_markdown",
         "category": "TableTools",
-        "signature": "(self, table, filename)",
-        "doc": "Attempt to write the data stored in a Table object to a Markdown file ('filename') with a \".md\" extension.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.",
-        "example": "tt.write_markdown(table, filename)"
+        "signature": "(self, table, filename, encoding='utf-8')",
+        "doc": "Attempt to write the data stored in a Table object to a Markdown file ('filename') with a \".md\" extension.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.\n\nencoding (string): the text encoding to use when writing the file.",
+        "example": "tt.write_markdown(table, filename, encoding='utf-8')"
     },
     "write_other_text": {
         "name": "write_other_text",
         "category": "TableTools",
-        "signature": "(self, table, filename, extension, delimiter=',')",
-        "doc": "Attempt to write the data stored in a Table object to a text file ('filename') with an extension other than \".txt\".\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.\n\ndelimiter (string): the character that separates values in the output file. A comma is the default delimiter.\n\nextension (string): the extension of the file to be written.",
-        "example": "tt.write_other_text(table, filename, extension, delimiter=',')"
+        "signature": "(self, table, filename, extension, delimiter=',', encoding='utf-8')",
+        "doc": "Attempt to write the data stored in a Table object to a text file ('filename') with an extension other than \".txt\".\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.\n\ndelimiter (string): the character that separates values in the output file. A comma is the default delimiter.\n\nextension (string): the extension of the file to be written.\n\nencoding (string): the text encoding to use when writing the file.",
+        "example": "tt.write_other_text(table, filename, extension, delimiter=',', encoding='utf-8')"
     },
     "write_psv": {
         "name": "write_psv",
         "category": "TableTools",
-        "signature": "(self, table, filename)",
-        "doc": "Attempt to write the data stored in a Table object to a PSV file ('filename') with a \".psv\" extension.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.",
-        "example": "tt.write_psv(table, filename)"
+        "signature": "(self, table, filename, encoding='utf-8')",
+        "doc": "Attempt to write the data stored in a Table object to a PSV file ('filename') with a \".psv\" extension.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.\n\nencoding (string): the text encoding to use when writing the file.",
+        "example": "tt.write_psv(table, filename, encoding='utf-8')"
     },
     "write_r_dput": {
         "name": "write_r_dput",
         "category": "TableTools",
-        "signature": "(self, table, filename)",
-        "doc": "Attempt to write the data stored in a Table object to an R dput() representation of a data frame ('filename') with a \".r\" extension. The output will be a structure(list(...)) object where each column is represented as a named vector using R's c(...) syntax.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.",
-        "example": "result = tt.write_r_dput(table, filename)"
+        "signature": "(self, table, filename, encoding='utf-8')",
+        "doc": "Attempt to write the data stored in a Table object to an R dput() representation of a data frame ('filename') with a \".r\" extension. The output will be a structure(list(...)) object where each column is represented as a named vector using R's c(...) syntax.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.\n\nencoding (string): the text encoding to use when writing the file.",
+        "example": "result = tt.write_r_dput(table, filename, encoding='utf-8')"
     },
     "write_sql": {
         "name": "write_sql",
@@ -450,30 +450,30 @@
     "write_text": {
         "name": "write_text",
         "category": "TableTools",
-        "signature": "(self, table, filename, delimiter=',')",
-        "doc": "Attempt to write the data stored in a Table object to a text file ('filename') with a \".txt\" extension.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.\n\ndelimiter (string): the character that separates values in the output file. A comma is the default delimiter.",
-        "example": "tt.write_text(table, filename, delimiter=',')"
+        "signature": "(self, table, filename, delimiter=',', encoding='utf-8')",
+        "doc": "Attempt to write the data stored in a Table object to a text file ('filename') with a \".txt\" extension.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.\n\ndelimiter (string): the character that separates values in the output file. A comma is the default delimiter.\n\nencoding (string): the text encoding to use when writing the file.",
+        "example": "tt.write_text(table, filename, delimiter=',', encoding='utf-8')"
     },
     "write_tsv": {
         "name": "write_tsv",
         "category": "TableTools",
-        "signature": "(self, table, filename)",
-        "doc": "Attempt to write the data stored in a Table object to a TSV file ('filename') with a \".tsv\" extension.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.",
-        "example": "tt.write_tsv(table, filename)"
+        "signature": "(self, table, filename, encoding='utf-8')",
+        "doc": "Attempt to write the data stored in a Table object to a TSV file ('filename') with a \".tsv\" extension.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.\n\nencoding (string): the text encoding to use when writing the file.",
+        "example": "tt.write_tsv(table, filename, encoding='utf-8')"
     },
     "write_xml": {
         "name": "write_xml",
         "category": "TableTools",
-        "signature": "(self, table, filename)",
-        "doc": "Attempt to write the data stored in a Table object to an XML file ('filename') with a \".xml\" extension. The XML document will contain a single <table> element, with each row represented as a <row> element containing child tags corresponding to column headers.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.",
-        "example": "tt.write_xml(table, filename)"
+        "signature": "(self, table, filename, encoding='utf-8')",
+        "doc": "Attempt to write the data stored in a Table object to an XML file ('filename') with a \".xml\" extension. The XML document will contain a single <table> element, with each row represented as a <row> element containing child tags corresponding to column headers.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.\n\nencoding (string): the text encoding to use when writing the file.",
+        "example": "tt.write_xml(table, filename, encoding='utf-8')"
     },
     "write_yaml": {
         "name": "write_yaml",
         "category": "TableTools",
-        "signature": "(self, table, filename)",
-        "doc": "Attempt to write the data stored in a Table object to a YAML file ('filename') with a \".yaml\" extension. The YAML document will contain a top-level list of dictionaries, where each dictionary represents a row and keys correspond to column headers.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.",
-        "example": "tt.write_yaml(table, filename)"
+        "signature": "(self, table, filename, encoding='utf-8')",
+        "doc": "Attempt to write the data stored in a Table object to a YAML file ('filename') with a \".yaml\" extension. The YAML document will contain a top-level list of dictionaries, where each dictionary represents a row and keys correspond to column headers.\n\nParameters:\n\ntable (object): the Table object to be written.\n\nfilename (string): the name of the file to be written.\n\nencoding (string): the text encoding to use when writing the file.",
+        "example": "tt.write_yaml(table, filename, encoding='utf-8')"
     },
     "append_column": {
         "name": "append_column",
@@ -558,6 +558,13 @@
         "signature": "(self, terminal=False)",
         "doc": "Display help for the column calculator. Generates an HTML document by default.\n\nParameters:\n\nterminal (Boolean): flag to indicate if the help will be printed to a terminal or written as a file.",
         "example": "result = table.calculator_help(terminal=False)"
+    },
+    "cancat_row": {
+        "name": "cancat_row",
+        "category": "Table",
+        "signature": "(self, row, join_with)",
+        "doc": "Concatenate the values in the specified row ('row') and return a string.\n\nParameters:\n\nrow (integer): the index of the row the operation will be performed on.\n\njoin_with (string): the string to join row values with.",
+        "example": "result = table.cancat_row(row, join_with)"
     },
     "check_date_continuity": {
         "name": "check_date_continuity",
@@ -649,6 +656,13 @@
         "signature": "(self, table, summary=True)",
         "doc": "Compare this Table with another Table object ('Table') and return a dictionary of structural differences. Returns a dictionary with keys: 'rows', 'columns', 'columns_only_in_self', 'columns_only_in_other', 'columns_in_both', 'column_type_differences', and 'column_order_matches'. Results are ordered self and other.\n\nParameters:\n\ntable (object): the Table object to compare against.\n\nsummary (Boolean): flag to indicate if a summary of the comparison will be printed. If False, only returns a dictionary of results.",
         "example": "result = table.compare(table, summary=True)"
+    },
+    "concat_column": {
+        "name": "concat_column",
+        "category": "Table",
+        "signature": "(self, column, join_with)",
+        "doc": "Concatenate the values in the specified column ('column') and return a string.\n\nParameters:\n\ncolumn (integer, string): the index or header of the column the operation will be performed on.\n\njoin_with (string): the string to join column values with.",
+        "example": "result = table.concat_column(column, join_with)"
     },
     "convert_dtype": {
         "name": "convert_dtype",
@@ -887,6 +901,13 @@
         "signature": "(self, column, condition, dtype)",
         "doc": "Filter the Table data by removing rows that do not meet a specified data type condition and return a new Table object. This filtering operation is performed with columns of specific data types.\n\nParameters:\n\ncolumn (integer, string): the index or header of the column to filter Table data by.\n\ncondition (string): the condition placed upon each value in the specified column to determine inclusion in the filtered data. May be specified as \"is\" to include values that match the data type, or \"is not\" to include values that do not match.\n\ndtype (string): the data type to evaluate each value in the specified column against to determine inclusion in the filtered data. Possible types include \"int\", \"float\", \"string\", \"bool\", and \"nan\".",
         "example": "result = table.filter_type(column, condition, dtype)"
+    },
+    "first_row_to_headers": {
+        "name": "first_row_to_headers",
+        "category": "Table",
+        "signature": "(self)",
+        "doc": "Set the first row of data as the column headers and drop the first row of the Table.",
+        "example": "table.first_row_to_headers()"
     },
     "generate_id_col": {
         "name": "generate_id_col",

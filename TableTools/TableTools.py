@@ -3,7 +3,7 @@
 # TableTools
 # Author: Nigel Van Nieuwenhuizen, MSc
 # Created: February 2021
-# Last Updated: February 2026
+# Last Updated: April 2026
 
 # Global imports
 import math, random, itertools, operator, statistics, datetime, copy, os, io
@@ -31,7 +31,7 @@ class _ListOps():
     # DATA TYPE AND TRANSFORMATION
     # ============================================================
 
-    def convert_data_type(self,vals,dtype = "integer"):
+    def convert_data_type(self, vals, dtype="integer"):
         """Convert each value in an input list ('vals') to the specified data type ('dtype') and return a new list.
 
         Parameters:
@@ -43,17 +43,63 @@ class _ListOps():
             raise ValueError("'vals' must be a list.")
         if not vals:
             raise ValueError("'vals' must be a non-empty list.")
-        if dtype not in {"integer", "float", "string", "boolean"}:
+        if dtype not in {"integer", "float", "string", "boolean", "Boolean"}:
             raise ValueError("'dtype' must be one of: 'integer', 'float', 'string', 'Boolean'.")
 
-        if dtype == "integer":
-            return [int(v) for v in vals]
-        elif dtype == "float":
-            return [float(v) for v in vals]
-        elif dtype == "string":
-            return [str(v) for v in vals]
-        elif dtype == "Boolean":
-            return [bool(v) for v in vals]
+        # Normalize dtype
+        dtype = dtype.lower()
+        if dtype == "boolean":
+            dtype = "bool"
+
+        def _cast_value(v):
+            if dtype == "bool":
+                # Already a bool
+                if isinstance(v, bool):
+                    return v
+
+                # Numeric booleans
+                if isinstance(v, int) and not isinstance(v, bool):
+                    if v == 1:
+                        return True
+                    if v == 0:
+                        return False
+                    return v  # leave unchanged
+
+                # String booleans
+                if isinstance(v, str):
+                    low = v.strip().lower()
+                    if low == "true":
+                        return True
+                    if low == "false":
+                        return False
+                    if low == "1":
+                        return True
+                    if low == "0":
+                        return False
+                    return v  # unconvertible
+
+                return v  # fallback
+
+            # String handling
+            if dtype == "string":
+                return str(v)
+
+            # Numeric cleanup for int/float
+            cleaned = v
+            if isinstance(v, str):
+                cleaned = v.strip().replace(",", "").replace("_", "")
+
+            try:
+                if dtype == "integer":
+                    return int(cleaned)
+                elif dtype == "float":
+                    return float(cleaned)
+            except Exception:
+                return v  # fallback: leave unchanged
+
+            return v
+
+        return [_cast_value(v) for v in vals]
       
     def is_type(self, vals, target_type="int"):
         """Check the type of each element in a list ('vals') against a target type and return a list of Boolean values.
@@ -6361,7 +6407,7 @@ class _Points():
             points.append(_Point(id_val, x_val, y_val, attrs))
 
         return _PointDataset(points, headers, id_col=id_col, x_col=x_col, y_col=y_col)
-
+    
     def points_to_table(self, points):
         """Convert a PointDataset ('points') into a Table object.
         
@@ -6373,10 +6419,30 @@ class _Points():
 
         output = TableTools().new_table()
         headers = points.headers
+        
+        # Identify the original indices of the spatial columns
+        id_idx = headers.index(points.id_col)
+        x_idx = headers.index(points.x_col)
+        y_idx = headers.index(points.y_col)
+        
+        # Identify indices for 'attrs' (everything that isn't ID, X, or Y)
+        spatial_indices = {id_idx, x_idx, y_idx}
+        attr_indices = [i for i in range(len(headers)) if i not in spatial_indices]
 
         for p in points:
-            # Build row: id, x, y, followed by attrs
-            row = [p.id, p.x, p.y] + list(p.attrs)
+            # Create a row of the correct length
+            row = [None] * len(headers)
+            
+            # Place spatial data in their original spots
+            row[id_idx] = p.id
+            row[x_idx] = p.x
+            row[y_idx] = p.y
+            
+            # Place attributes in the remaining slots
+            for i, attr_val in enumerate(p.attrs):
+                target_idx = attr_indices[i]
+                row[target_idx] = attr_val
+                
             output.append_row(row)
 
         output.set_headers(headers)
@@ -15020,7 +15086,7 @@ class _Table():
             self._dtypes.append(self._return_col_type(self.get_column(c)))
         return self
 
-    def convert_dtype(self,column,dtype):
+    def convert_dtype(self, column, dtype):
         """Convert the data type of a single column to another data type.
         
         Parameters:
@@ -15034,25 +15100,20 @@ class _Table():
         if isinstance(column, str):
             column = self._headers.index(column)
 
-        # Add bool support
-        valid = {
-            "integer": int,
-            "float": float,
-            "string": str,
-            "bool": None  # custom handling below
-        }
+        # Normalize dtype
+        dtype = dtype.lower()
 
+        valid = {"integer", "float", "string", "bool"}
         if dtype not in valid:
-            raise ValueError(f"Invalid dtype '{dtype}'. Must be one of {set(valid)}.")
+            raise ValueError(f"Invalid dtype '{dtype}'. Must be one of {valid}.")
 
         self._dtypes[column] = dtype
 
-        # Custom boolean caster
-        if dtype == "bool":
-            true_set = self._boolean_true_values
-            false_set = self._boolean_false_values
+        true_set = self._boolean_true_values
+        false_set = self._boolean_false_values
 
-            def caster(val):
+        def caster(val):
+            if dtype == "bool":
                 # Already a bool
                 if isinstance(val, bool):
                     return val
@@ -15063,6 +15124,7 @@ class _Table():
                         return True
                     if val == 0:
                         return False
+                    return val
 
                 # String booleans
                 if isinstance(val, str):
@@ -15071,13 +15133,28 @@ class _Table():
                         return True
                     if low in false_set:
                         return False
+                    return val  # unconvertible
 
-                # Unconvertible, leave unchanged
-                return val
+                return val  # fallback
 
-        else:
-            # Use built-in caster for int, float, string
-            caster = valid[dtype]
+            # String handling
+            if dtype == "string":
+                return str(val)
+
+            # Numeric cleanup for int/float
+            cleaned = val
+            if isinstance(val, str):
+                cleaned = val.strip().replace(",", "").replace("_", "")
+
+            try:
+                if dtype == "integer":
+                    return int(cleaned)
+                elif dtype == "float":
+                    return float(cleaned)
+            except Exception:
+                return val  # fallback: leave unchanged
+
+            return val
 
         # Apply conversion
         for row in self._data:
@@ -15085,6 +15162,7 @@ class _Table():
                 row[column] = caster(row[column])
             except Exception:
                 pass
+
         return self
 
     def autogenerate_headers(self):
@@ -15164,6 +15242,11 @@ class _Table():
 
         self.set_headers(cleaned)
         return self
+
+    def first_row_to_headers(self):
+        """Set the first row of data as the column headers and drop the first row of the Table."""
+        row = self.pop_row(0)
+        self.set_headers(row)
 
     def is_empty(self):
         """Returns True if this Table object has no data and False otherwise."""
@@ -16236,6 +16319,19 @@ class _Table():
 
         return _out
 
+    def concat_column(self,column,join_with):
+        """Concatenate the values in the specified column ('column') and return a string.
+
+        Parameters:
+        
+        column (integer, string): the index or header of the column the operation will be performed on.
+        
+        join_with (string): the string to join column values with."""
+        if isinstance(column, str):
+            return column in self._headers
+        c = self.get_column(column)
+        return join_with.join(str(i) for i in c)
+
     # ============================================================
     # ROW OPERATIONS
     # ============================================================
@@ -16637,6 +16733,17 @@ class _Table():
         out_table.set_headers(headers)
         out_table.set_dtypes(dtypes)
         return out_table
+
+    def cancat_row(self,row,join_with):
+        """Concatenate the values in the specified row ('row') and return a string.
+
+        Parameters:
+        
+        row (integer): the index of the row the operation will be performed on.
+        
+        join_with (string): the string to join row values with."""
+        r = self.get_row(row)
+        return join_with.join(str(i) for i in r)
 
     # ============================================================
     # TABLE-TO-TABLE OPERATIONS
@@ -19485,7 +19592,7 @@ class TableTools():
 
     def version(self):
         """Print the current version of TableTools."""
-        print(f"TableTools v1.0.4")
+        print(f"TableTools v1.0.5")
 
     def view_manual(self):
         """Open a web browser to view the TableTools manual."""
@@ -20092,7 +20199,7 @@ class TableTools():
     # READERS
     # ============================================================
 
-    def peek_raw_text(self,text_file, extension = ".txt", num_lines = 5, return_lines = False):
+    def peek_raw_text(self,text_file, extension = ".txt", num_lines = 5, return_lines = False, encoding = "utf-8"):
         """Attempt to read a raw text file ('text_file') and print or return the specified number of lines ('num_lines'). No data type conversion is performed and data is not returned in a Table object. This function streams the file line by line and stops after 'num_lines', so very large files can be inspected safely without loading the entire file into memory.
 
         Parameters:
@@ -20103,14 +20210,16 @@ class TableTools():
 
         num_lines (integer): the number of lines to be printed or returned.
         
-        return_lines (Boolean): flag to indicate if num_lines will be printed to the terminal (False) or returned as a list (True)."""
+        return_lines (Boolean): flag to indicate if num_lines will be printed to the terminal (False) or returned as a list (True).
+        
+        encoding (string): the text encoding to use when reading the file."""
         # open file
         file = self._extension_handler(text_file,extension)
         if self._in_dir and os.path.dirname(file) == "":
             file = os.path.join(self._in_dir, file)
 
         lines = []
-        with open(file, "r", encoding="utf-8") as f:
+        with open(file, "r", encoding=encoding) as f:
             for i, line in enumerate(f):
                 if not return_lines:
                     print(line.rstrip("\n"))
@@ -20121,23 +20230,25 @@ class TableTools():
                         return lines
                     break
 
-    def read_raw_text(self,text_file, extension = ".txt"):
+    def read_raw_text(self,text_file, extension = ".txt", encoding = "utf-8"):
         """Attempt to read a raw text file ('text_file') and return the contents as a nested list. No data type conversion is performed and data is not returned in a Table object.
 
         Parameters:
 
         text_file (string): the name of the text file to be read, including the ".txt" extension.
         
-        extension (string): the extension of the file to be read."""
+        extension (string): the extension of the file to be read.
+        
+        encoding (string): the text encoding to use when reading the file."""
         # open file
         file = self._extension_handler(text_file,extension)
         if self._in_dir and os.path.dirname(file) == "":
             file = os.path.join(self._in_dir, file)
         
-        with open(file, "r", encoding="utf-8") as f:
+        with open(file, "r", encoding=encoding) as f:
             return [line.rstrip("\n") for line in f.readlines()]
 
-    def read_text(self,text_file,delimiter=",",skiprows = 0,headers = True):
+    def read_text(self,text_file,delimiter=",",skiprows = 0,headers = True, encoding = "utf-8"):
         """Attempt to read a delimited text file ('text_file') with a ".txt" extension and store the data in a new Table object.
 
         Parameters:
@@ -20148,13 +20259,15 @@ class TableTools():
         
         skiprows (integer): the number of rows to skip at the start of the file, if necessary.
         
-        headers (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated."""
+        headers (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.
+        
+        encoding (string): the text encoding to use when reading the file."""
         file = self._extension_handler(text_file,".txt")
         if self._in_dir and os.path.dirname(file) == "":
             file = os.path.join(self._in_dir, file)
         
         rows = []
-        with open(file, "r", encoding="utf-8") as f:
+        with open(file, "r", encoding=encoding) as f:
             for row in self._read_logical_rows(f):
                 # fast path: no quotes, use split (very fast)
                 if '"' not in row:
@@ -20189,7 +20302,7 @@ class TableTools():
         
         return t
 
-    def read_other_text(self,text_file,extension,delimiter=",",skiprows = 0,headers = True):
+    def read_other_text(self,text_file,extension,delimiter=",",skiprows = 0,headers = True, encoding = "utf-8"):
         """Attempt to read a delimited text file ('text_file') with an extension other than ".txt" and store the data in a new Table object.
 
         Parameters:
@@ -20202,14 +20315,16 @@ class TableTools():
         
         skiprows (integer): the number of rows to skip at the start of the file, if necessary.
         
-        headers (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated."""
+        headers (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.
+        
+        encoding (string): the text encoding to use when reading the file."""
         # open file
         file = self._extension_handler(text_file,extension)
         if self._in_dir and os.path.dirname(file) == "":
             file = os.path.join(self._in_dir, file)
 
         rows = []
-        with open(file, "r", encoding="utf-8") as f:
+        with open(file, "r", encoding=encoding) as f:
             for row in self._read_logical_rows(f):
                 # fast path: no quotes, use split (very fast)
                 if '"' not in row:
@@ -20244,7 +20359,7 @@ class TableTools():
         
         return t
     
-    def read_csv(self,csv_file,skiprows = 0,headers = True):
+    def read_csv(self,csv_file,skiprows = 0,headers = True, encoding = "utf-8"):
         """Attempt to read a delimited CSV file ('csv_file') and store the data in a new Table object.
 
         Parameters:
@@ -20253,14 +20368,16 @@ class TableTools():
         
         skiprows (integer): the number of rows to skip at the start of the file, if necessary.
         
-        headers (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated."""
+        headers (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.
+        
+        encoding (string): the text encoding to use when reading the file."""
         # open file
         file = self._extension_handler(csv_file,".csv")
         if self._in_dir and os.path.dirname(file) == "":
             file = os.path.join(self._in_dir, file)
 
         rows = []
-        with open(file, "r", encoding="utf-8") as f:
+        with open(file, "r", encoding=encoding) as f:
             for row in self._read_logical_rows(f):
                 # fast path: no quotes, use split (very fast)
                 if '"' not in row:
@@ -20295,7 +20412,7 @@ class TableTools():
 
         return t
 
-    def read_tsv(self, tsv_file, skiprows=0, headers=True):
+    def read_tsv(self, tsv_file, skiprows=0, headers=True, encoding = "utf-8"):
         """Attempt to read a tab-separated values file ('tsv_file') and store the data in a new Table object.
 
         Parameters:
@@ -20304,14 +20421,16 @@ class TableTools():
 
         skiprows (integer): the number of rows to skip at the start of the file, if necessary.
 
-        headers (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated."""
+        headers (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.
+        
+        encoding (string): the text encoding to use when reading the file."""
         # Ensure extension and working directory
         file = self._extension_handler(tsv_file,".tsv")
         if self._in_dir and os.path.dirname(file) == "":
             file = os.path.join(self._in_dir, file)
 
         rows = []
-        with open(file, "r", encoding="utf-8") as f:
+        with open(file, "r", encoding=encoding) as f:
             for row in self._read_logical_rows(f):
                 # fast path: no quotes, use split (very fast)
                 if '"' not in row:
@@ -20343,7 +20462,7 @@ class TableTools():
 
         return t
 
-    def read_psv(self, psv_file, skiprows=0, headers=True):
+    def read_psv(self, psv_file, skiprows=0, headers=True, encoding = "utf-8"):
         """Attempt to read a pipe-separated values file ('psv_file') and store the data in a new Table object.
 
         Parameters:
@@ -20352,7 +20471,9 @@ class TableTools():
 
         skiprows (integer): the number of rows to skip at the start of the file, if necessary.
 
-        headers (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated."""
+        headers (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.
+        
+        encoding (string): the text encoding to use when reading the file."""
         # Ensure extension and working directory
         file = self._extension_handler(psv_file,".psv")
         if self._in_dir and os.path.dirname(file) == "":
@@ -20360,7 +20481,7 @@ class TableTools():
 
         # Read raw lines
         rows = []
-        with open(file, "r", encoding="utf-8") as f:
+        with open(file, "r", encoding=encoding) as f:
             for row in self._read_logical_rows(f):
                 # fast path: no quotes, use split (very fast)
                 if '"' not in row:
@@ -20392,7 +20513,7 @@ class TableTools():
 
         return t
 
-    def read_fixedwidth(self, fw_file, extension = ".txt", widths=None, skiprows=0, headers=True, overflow=None):
+    def read_fixedwidth(self, fw_file, extension = ".txt", widths=None, skiprows=0, headers=True, overflow=None, encoding = "utf-8"):
         """Attempt to read a fixed-width text file ('txt_file') and store the data in a new Table object.
 
         Parameters:
@@ -20407,7 +20528,9 @@ class TableTools():
 
         headers (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.
 
-        overflow (string): how column overflow should be managed if a column value exceeds its specified width. If None, columns are silently truncationed. If "auto-expand", columns are expanded as need to fit values. If "strict", an error is raised."""
+        overflow (string): how column overflow should be managed if a column value exceeds its specified width. If None, columns are silently truncationed. If "auto-expand", columns are expanded as need to fit values. If "strict", an error is raised.
+        
+        encoding (string): the text encoding to use when reading the file."""
 
         # Ensure extension and working directory
         file = self._extension_handler(fw_file,extension)
@@ -20415,7 +20538,7 @@ class TableTools():
             file = os.path.join(self._in_dir, file)
 
         # Read raw lines
-        with open(file, "r", encoding="utf-8") as f:
+        with open(file, "r", encoding=encoding) as f:
             lines = [line.rstrip("\n") for line in f.readlines()]
 
         # Skip initial non-tabular lines if requested
@@ -20518,7 +20641,7 @@ class TableTools():
 
         return t
 
-    def read_markdown(self, md_file, headers=True, skiprows=0, table_index=0):
+    def read_markdown(self, md_file, headers=True, skiprows=0, table_index=0, encoding = "utf-8"):
         """Attempt to read a table in a Markdown document ('md_file') and store the data in a new Table object.
 
         Parameters:
@@ -20529,14 +20652,16 @@ class TableTools():
 
         skiprows (integer): the number of rows to skip at the start of the file, if necessary.
 
-        table_index (integer): which table to read. Markdown documents may contain multiple tables. Index 0 refers to the first table found."""
+        table_index (integer): which table to read. Markdown documents may contain multiple tables. Index 0 refers to the first table found.
+        
+        encoding (string): the text encoding to use when reading the file."""
         # Ensure extension and working directory
         file = self._extension_handler(md_file,".md",valid_exts=[".md", ".markdown"])
         if self._in_dir and os.path.dirname(file) == "":
             file = os.path.join(self._in_dir, file)
 
         # Read raw lines
-        with open(file, "r", encoding="utf-8") as f:
+        with open(file, "r", encoding=encoding) as f:
             lines = [line.rstrip("\n") for line in f.readlines()]
 
         # Skip initial non-tabular lines if requested
@@ -20615,7 +20740,7 @@ class TableTools():
 
         return t
 
-    def read_latex(self, tex_file, headers=True, skiprows=0, table_index=0):
+    def read_latex(self, tex_file, headers=True, skiprows=0, table_index=0, encoding = "utf-8"):
         """Attempt to read a table in a LaTeX document ('tex_file') and store the data in a new Table object.
 
         Parameters:
@@ -20626,14 +20751,16 @@ class TableTools():
 
         skiprows (integer): the number of rows to skip at the start of the file, if necessary.
 
-        table_index (integer): which table to read. LaTeX documents may contain multiple tables. Index 0 refers to the first table found."""
+        table_index (integer): which table to read. LaTeX documents may contain multiple tables. Index 0 refers to the first table found.
+        
+        encoding (string): the text encoding to use when reading the file."""
         # Ensure extension and working directory
         file = self._extension_handler(tex_file,".tex")
         if self._in_dir and os.path.dirname(file) == "":
             file = os.path.join(self._in_dir, file)
 
         # Read raw lines
-        with open(file, "r", encoding="utf-8") as f:
+        with open(file, "r", encoding=encoding) as f:
             lines = [line.rstrip("\n") for line in f.readlines()]
 
         # Skip initial non-tabular lines if requested
@@ -20711,21 +20838,23 @@ class TableTools():
 
         return t
 
-    def read_yaml(self, yaml_file):
+    def read_yaml(self, yaml_file, encoding = "utf-8"):
         """Attempt to read a YAML document ('yaml_file') containing a list of dictionaries and store the data in a new Table object.
 
         The YAML file must contain a top-level list, where each element is a dictionary representing a row. Dictionary keys become column headers.
 
         Parameters:
 
-        yaml_file (string): the name of the YAML file to be read, including the ".yaml" or ".yml" extension."""
+        yaml_file (string): the name of the YAML file to be read, including the ".yaml" or ".yml" extension.
+        
+        encoding (string): the text encoding to use when reading the file."""
         # Ensure extension and working directory
         file = self._extension_handler(yaml_file, ".yaml", valid_exts=[".yaml", ".yml"])
         if self._in_dir and os.path.dirname(file) == "":
             file = os.path.join(self._in_dir, file)
 
         # Read raw lines
-        with open(file, "r", encoding="utf-8") as f:
+        with open(file, "r", encoding=encoding) as f:
             lines = [line.rstrip("\n") for line in f.readlines()]
 
         # Minimal YAML parser for list-of-dicts
@@ -20787,7 +20916,7 @@ class TableTools():
 
         return t
 
-    def read_ini(self, ini_file, headers=True, skiprows=0):
+    def read_ini(self, ini_file, headers=True, skiprows=0, encoding = "utf-8"):
         """Attempt to read an INI-style configuration file ('ini_file') and store the data in a new Table object. Each section becomes a row, and keys within sections become columns. Missing keys are filled with None.
 
         Parameters:
@@ -20796,14 +20925,16 @@ class TableTools():
 
         headers (Boolean): flag to indicate if the keys should be used as column headers. If False, generic headers will be automatically generated.
 
-        skiprows (integer): the number of rows to skip at the start of the file, if necessary."""
+        skiprows (integer): the number of rows to skip at the start of the file, if necessary.
+        
+        encoding (string): the text encoding to use when reading the file."""
         # Ensure extension and working directory
         file = self._extension_handler(ini_file, ".ini", valid_exts=[".ini", ".cfg", ".conf"])
         if self._in_dir and os.path.dirname(file) == "":
             file = os.path.join(self._in_dir, file)
 
         # Read raw lines
-        with open(file, "r", encoding="utf-8") as f:
+        with open(file, "r", encoding=encoding) as f:
             lines = [line.rstrip("\n") for line in f.readlines()]
 
         # Skip initial non-tabular lines if requested
@@ -20872,7 +21003,7 @@ class TableTools():
 
         return t
 
-    def read_xml(self, xml_file, headers=True, skiprows=0, table_index=0):
+    def read_xml(self, xml_file, headers=True, skiprows=0, table_index=0, encoding = "utf-8"):
         """Attempt to read a table in an XML document ('xml_file') and store the data in a new Table object.
 
         Parameters:
@@ -20883,14 +21014,16 @@ class TableTools():
 
         skiprows (integer): the number of rows to skip at the start of the file, if necessary.
 
-        table_index (integer): which table to read. XML documents may contain multiple <table> elements. Index 0 refers to the first table found."""
+        table_index (integer): which table to read. XML documents may contain multiple <table> elements. Index 0 refers to the first table found.
+        
+        encoding (string): the text encoding to use when reading the file."""
         # Ensure extension and working directory
         file = self._extension_handler(xml_file, ".xml")
         if self._in_dir and os.path.dirname(file) == "":
             file = os.path.join(self._in_dir, file)
 
         # Read raw lines
-        with open(file, "r", encoding="utf-8") as f:
+        with open(file, "r", encoding=encoding) as f:
             lines = [line.rstrip("\n") for line in f.readlines()]
 
         # Skip initial non-tabular lines if requested
@@ -21000,19 +21133,21 @@ class TableTools():
 
         return t
 
-    def read_json(self,json_file):
+    def read_json(self,json_file, encoding = "utf-8"):
         """Attempt to read a JSON file ('json_file') and store the data in a new Table object. It is expected that the JSON file has a single object. The object's keys will be used as column headers, and the object's values should be equal-length arrays representing the column data.
         
         Parameters:
         
-        json_file (string): the name of the JSON file to be read, including the ".json" extension."""
+        json_file (string): the name of the JSON file to be read, including the ".json" extension.
+        
+        encoding (string): the text encoding to use when reading the file."""
         import json
         file = self._extension_handler(json_file, ".json")
         if self._in_dir and os.path.dirname(file) == "":
             file = os.path.join(self._in_dir, file)
 
         # parse JSON file json module
-        with open(file, "r", encoding="utf-8") as f:
+        with open(file, "r", encoding=encoding) as f:
             jdict = json.load(f)
 
         # create table object
@@ -21027,7 +21162,7 @@ class TableTools():
 
         return t
 
-    def read_html(self,html_file,headers = True, table_index = 0):
+    def read_html(self,html_file,headers = True, table_index = 0, encoding = "utf-8"):
         """Attempt to read a table in an HTML document ('html_file') and store the data in a new Table object.
 
         Parameters:
@@ -21036,13 +21171,15 @@ class TableTools():
         
         headers (Boolean): flag to indicate if the columns have headers. If columns do not have headers, generic headers will be automatically generated.
         
-        table_index (integer): which table to read. In an HTML document with one table, index must be 0 (first table). In a document with multiple tables, other index values may be used to read other tables."""
+        table_index (integer): which table to read. In an HTML document with one table, index must be 0 (first table). In a document with multiple tables, other index values may be used to read other tables.
+        
+        encoding (string): the text encoding to use when reading the file."""
         # check extension and working directory, then open the file
         file = self._extension_handler(html_file, ".html", valid_exts=[".html", ".htm"])
         if self._in_dir and os.path.dirname(file) == "":
             file = os.path.join(self._in_dir, file)
 
-        with open(file, "r", encoding="utf-8") as f:
+        with open(file, "r", encoding=encoding) as f:
             lines = f.readlines()
 
         # create table object
@@ -21103,7 +21240,7 @@ class TableTools():
         t.detect_dtypes()
         return t
 
-    def read_r_dput(self, r_file, headers=True, skiprows=0):
+    def read_r_dput(self, r_file, headers=True, skiprows=0, encoding = "utf-8"):
         """Attempt to read an R dput() representation of a data frame ('r_file') and store the data in a new Table object.
 
         The R object must be of the form:
@@ -21126,7 +21263,7 @@ class TableTools():
             file = os.path.join(self._in_dir, file)
 
         # Read raw lines
-        with open(file, "r", encoding="utf-8") as f:
+        with open(file, "r", encoding=encoding) as f:
             lines = [line.rstrip("\n") for line in f.readlines()]
 
         # Skip initial non-tabular lines if requested
@@ -21577,7 +21714,7 @@ class TableTools():
     # WRITERS
     # ============================================================
 
-    def write_text(self, table, filename, delimiter=","):
+    def write_text(self, table, filename, delimiter=",", encoding = "utf-8"):
         """Attempt to write the data stored in a Table object to a text file ('filename') with a ".txt" extension.
         
         Parameters:
@@ -21587,7 +21724,8 @@ class TableTools():
         filename (string): the name of the file to be written.
         
         delimiter (string): the character that separates values in the output file. A comma is the default delimiter.
-        """
+        
+        encoding (string): the text encoding to use when writing the file."""
         data = table.get_data()
         if table.get_headers():
             data.insert(0, table.get_headers())
@@ -21611,10 +21749,10 @@ class TableTools():
         lines = [delimiter.join(self._escape_field(val,delimiter) for val in row) + "\n" for row in data]
 
         # Write all rows at once
-        with open(filename, "w", encoding="utf-8") as f:
+        with open(filename, "w", encoding=encoding) as f:
             f.writelines(lines)
 
-    def write_other_text(self,table,filename,extension,delimiter = ","):
+    def write_other_text(self,table,filename,extension,delimiter = ",", encoding = "utf-8"):
         """Attempt to write the data stored in a Table object to a text file ('filename') with an extension other than ".txt".
         
         Parameters:
@@ -21625,7 +21763,9 @@ class TableTools():
         
         delimiter (string): the character that separates values in the output file. A comma is the default delimiter.
         
-        extension (string): the extension of the file to be written."""
+        extension (string): the extension of the file to be written.
+        
+        encoding (string): the text encoding to use when writing the file."""
         data = table.get_data()
         if table.get_headers():
             data.insert(0, table.get_headers())
@@ -21649,17 +21789,19 @@ class TableTools():
         lines = [delimiter.join(self._escape_field(val,delimiter) for val in row) + "\n" for row in data]
 
         # Write all rows at once
-        with open(filename, "w", encoding="utf-8") as f:
+        with open(filename, "w", encoding=encoding) as f:
             f.writelines(lines)
 
-    def write_csv(self,table,filename):
+    def write_csv(self,table,filename, encoding = "utf-8"):
         """Attempt to write the data stored in a Table object to a CSV file ('filename') with a ".csv" extension.
 
         Parameters:
         
         table (object): the Table object to be written.
         
-        filename (string): the name of the file to be written."""
+        filename (string): the name of the file to be written.
+        
+        encoding (string): the text encoding to use when writing the file."""
         data = table.get_data()
         if table.get_headers():
             data.insert(0, table.get_headers())
@@ -21683,17 +21825,19 @@ class TableTools():
         lines = [','.join(self._escape_field(val,",") for val in row) + "\n" for row in data]
 
         # Write all rows at once
-        with open(filename, "w", encoding="utf-8") as f:
+        with open(filename, "w", encoding=encoding) as f:
             f.writelines(lines)
 
-    def write_tsv(self, table, filename):
+    def write_tsv(self, table, filename, encoding = "utf-8"):
         """Attempt to write the data stored in a Table object to a TSV file ('filename') with a ".tsv" extension.
 
         Parameters:
 
         table (object): the Table object to be written.
 
-        filename (string): the name of the file to be written."""
+        filename (string): the name of the file to be written.
+        
+        encoding (string): the text encoding to use when writing the file."""
         # Extract data and prepend headers
         data = table.get_data()
         if table.get_headers():
@@ -21721,17 +21865,19 @@ class TableTools():
         lines = ["\t".join(self._escape_field(val,"\t") for val in row) + "\n" for row in data]
 
         # Write file
-        with open(filename, "w", encoding="utf-8") as f:
+        with open(filename, "w", encoding=encoding) as f:
             f.writelines(lines)
 
-    def write_psv(self, table, filename):
+    def write_psv(self, table, filename, encoding = "utf-8"):
         """Attempt to write the data stored in a Table object to a PSV file ('filename') with a ".psv" extension.
 
         Parameters:
 
         table (object): the Table object to be written.
 
-        filename (string): the name of the file to be written."""
+        filename (string): the name of the file to be written.
+        
+        encoding (string): the text encoding to use when writing the file."""
         # Extract data and prepend headers
         data = table.get_data()
         if table.get_headers():
@@ -21759,10 +21905,10 @@ class TableTools():
         lines = ["|".join(self._escape_field(val,"|") for val in row) + "\n" for row in data]
 
         # Write file
-        with open(filename, "w", encoding="utf-8") as f:
+        with open(filename, "w", encoding=encoding) as f:
             f.writelines(lines)
 
-    def write_fixedwidth(self, table, filename, extension = ".txt", widths=None, overflow=None):
+    def write_fixedwidth(self, table, filename, extension = ".txt", widths=None, overflow=None, encoding = "utf-8"):
         """Attempt to write the data stored in a Table object to a fixed-width text file ('filename') with a ".txt" extension.
 
         Parameters:
@@ -21775,7 +21921,9 @@ class TableTools():
 
         widths (list): a list of character widths of each column. If None, widths will be auto-detected from the data.
 
-        overflow (string): how column overflow should be managed if a value exceeds its specified width. If None, values are silently truncated. If "auto-expand", columns are expanded as needed to fit values. If "strict", an error is raised."""
+        overflow (string): how column overflow should be managed if a value exceeds its specified width. If None, values are silently truncated. If "auto-expand", columns are expanded as needed to fit values. If "strict", an error is raised.
+        
+        encoding (string): the text encoding to use when writing the file."""
         # Extract data and prepend headers
         data = table.get_data()
         if table.get_headers():
@@ -21851,17 +21999,19 @@ class TableTools():
             lines.append("".join(cells) + "\n")
 
         # WRITE FILE
-        with open(filename, "w", encoding="utf-8") as f:
+        with open(filename, "w", encoding=encoding) as f:
             f.writelines(lines)
 
-    def write_markdown(self, table, filename):
+    def write_markdown(self, table, filename, encoding = "utf-8"):
         """Attempt to write the data stored in a Table object to a Markdown file ('filename') with a ".md" extension.
 
         Parameters:
 
         table (object): the Table object to be written.
 
-        filename (string): the name of the file to be written."""
+        filename (string): the name of the file to be written.
+        
+        encoding (string): the text encoding to use when writing the file."""
         # Extract data and prepend headers
         data = table.get_data()
         if table.get_headers():
@@ -21907,17 +22057,19 @@ class TableTools():
         md_output = "\n".join([header_row, separator_row] + data_rows) + "\n"
 
         # WRITE FILE
-        with open(filename, "w", encoding="utf-8") as f:
+        with open(filename, "w", encoding=encoding) as f:
             f.write(md_output)
 
-    def write_latex(self, table, filename):
+    def write_latex(self, table, filename, encoding = "utf-8"):
         """Attempt to write the data stored in a Table object to a LaTeX file ('filename') with a ".tex" extension.
 
         Parameters:
 
         table (object): the Table object to be written.
 
-        filename (string): the name of the file to be written."""
+        filename (string): the name of the file to be written.
+        
+        encoding (string): the text encoding to use when writing the file."""
         # Extract data and prepend headers
         data = table.get_data()
         if table.get_headers():
@@ -21972,17 +22124,19 @@ class TableTools():
 
         latex_output = "\n".join(lines)
 
-        with open(filename, "w", encoding="utf-8") as f:
+        with open(filename, "w", encoding=encoding) as f:
             f.write(latex_output)
 
-    def write_yaml(self, table, filename):
+    def write_yaml(self, table, filename, encoding = "utf-8"):
         """Attempt to write the data stored in a Table object to a YAML file ('filename') with a ".yaml" extension. The YAML document will contain a top-level list of dictionaries, where each dictionary represents a row and keys correspond to column headers.
 
         Parameters:
 
         table (object): the Table object to be written.
 
-        filename (string): the name of the file to be written."""
+        filename (string): the name of the file to be written.
+        
+        encoding (string): the text encoding to use when writing the file."""
         # Extract data and prepend headers
         data = table.get_data()
         headers = table.get_headers()
@@ -22021,17 +22175,19 @@ class TableTools():
         yaml_output = "\n".join(yaml_lines) + "\n"
 
         # WRITE FILE
-        with open(filename, "w", encoding="utf-8") as f:
+        with open(filename, "w", encoding=encoding) as f:
             f.write(yaml_output)
 
-    def write_ini(self, table, filename):
+    def write_ini(self, table, filename, encoding = "utf-8"):
         """Attempt to write the data stored in a Table object to an INI-style configuration file ('filename') with a ".ini" extension. Each row in the Table becomes a section, and each column becomes a key-value pair within that section.
 
         Parameters:
 
         table (object): the Table object to be written.
 
-        filename (string): the name of the file to be written."""
+        filename (string): the name of the file to be written.
+        
+        encoding (string): the text encoding to use when writing the file."""
         
         # Extract data and prepend headers
         data = table.get_data()
@@ -22077,17 +22233,19 @@ class TableTools():
         ini_output = "\n".join(ini_lines)
 
         # WRITE FILE
-        with open(filename, "w", encoding="utf-8") as f:
+        with open(filename, "w", encoding=encoding) as f:
             f.write(ini_output)
 
-    def write_xml(self, table, filename):
+    def write_xml(self, table, filename, encoding = "utf-8"):
         """Attempt to write the data stored in a Table object to an XML file ('filename') with a ".xml" extension. The XML document will contain a single <table> element, with each row represented as a <row> element containing child tags corresponding to column headers.
 
         Parameters:
 
         table (object): the Table object to be written.
 
-        filename (string): the name of the file to be written."""
+        filename (string): the name of the file to be written.
+        
+        encoding (string): the text encoding to use when writing the file."""
         # Extract data and prepend headers
         data = table.get_data()
         headers = table.get_headers()
@@ -22131,17 +22289,19 @@ class TableTools():
         xml_output = "\n".join(xml_lines)
 
         # WRITE FILE
-        with open(filename, "w", encoding="utf-8") as f:
+        with open(filename, "w", encoding=encoding) as f:
             f.write(xml_output)
 
-    def write_json(self,table,filename):
+    def write_json(self,table,filename, encoding = "utf-8"):
         """Attempt to write the data stored in a Table object to a JSON file ('filename') with a ".json" extension. This JSON file will have a single object. The object's keys will be the Table column headers, and the object's values will be arrays of column values.
         
         Parameters:
         
         table (object): the Table object to be written.
         
-        filename (string): the name of the file to be written."""
+        filename (string): the name of the file to be written.
+        
+        encoding (string): the text encoding to use when writing the file."""
         import json
         if table.is_empty():
             print("Table object has no data to be written.")
@@ -22162,10 +22322,10 @@ class TableTools():
         jdict = self.table_to_dict(table)
 
         # safe file writing
-        with open(filename, "w", encoding="utf-8") as f:
+        with open(filename, "w", encoding=encoding) as f:
             json.dump(jdict, f, ensure_ascii=False, indent=4)
 
-    def write_html(self,table,filename,style = "standard"):
+    def write_html(self,table,filename,style = "standard", encoding = "utf-8"):
         """Attempt to write the data stored in a Table object to a table in an HTML file ('filename') with the ".html" extension.
         
         Parameters:
@@ -22174,7 +22334,9 @@ class TableTools():
         
         filename (string): the name of the file to be written.
         
-        style (string): the style of the output table. The style may be specified as "standard" to enclose all cells in horizontal and vertical borders, or "scientific" to remove vertical borders from cells."""
+        style (string): the style of the output table. The style may be specified as "standard" to enclose all cells in horizontal and vertical borders, or "scientific" to remove vertical borders from cells.
+        
+        encoding (string): the text encoding to use when writing the file."""
         data = table.get_data()
         if table.get_headers():
             data.insert(0, table.get_headers())
@@ -22231,17 +22393,19 @@ class TableTools():
         footer = "</table>\n</body>\n</html>"
         html_output = "\n".join([header] + rows_html + [footer])
 
-        with open(filename, "w", encoding="utf-8") as f:
+        with open(filename, "w", encoding=encoding) as f:
             f.write(html_output)
 
-    def write_r_dput(self, table, filename):
+    def write_r_dput(self, table, filename, encoding = "utf-8"):
         """Attempt to write the data stored in a Table object to an R dput() representation of a data frame ('filename') with a ".r" extension. The output will be a structure(list(...)) object where each column is represented as a named vector using R's c(...) syntax.
 
         Parameters:
 
         table (object): the Table object to be written.
 
-        filename (string): the name of the file to be written."""
+        filename (string): the name of the file to be written.
+        
+        encoding (string): the text encoding to use when writing the file."""
         # Extract data and prepend headers
         data = table.get_data()
         headers = table.get_headers()
@@ -22306,7 +22470,7 @@ class TableTools():
         r_output = "structure(list(\n    " + list_body + "\n))\n"
 
         # WRITE FILE
-        with open(filename, "w", encoding="utf-8") as f:
+        with open(filename, "w", encoding=encoding) as f:
             f.write(r_output)
 
     def write_sql(self,table,filename,table_name):
